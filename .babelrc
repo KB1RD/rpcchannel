@@ -1,0 +1,22 @@
+{
+  "presets": [
+    "@babel/preset-typescript",
+    ["@babel/env", { "useBuiltIns": "entry", "corejs": 3 }]
+  ],
+  "plugins": [
+    [
+      "@babel/plugin-transform-typescript",
+      { "allowNamespaces": true, "allowDeclareFields": true }
+    ],
+    ["@babel/plugin-proposal-decorators", { "legacy": true }],
+    "@babel/plugin-proposal-class-properties",
+    "@babel/plugin-transform-runtime"
+  ],
+  "env": {
+    "test": {
+      "plugins": [
+        ["istanbul"]
+      ]
+    }
+  }
+}
