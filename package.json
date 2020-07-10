@@ -1,8 +1,8 @@
 {
-  "name": "@kb1rd/rpcchannel",
+  "name": "rpcchannel",
   "version": "0.1.0",
   "description": "Easy RPC with permission controls",
-  "main": "dist/@kb1rd/rpcchannel.min.js",
+  "main": "dist/rpcchannel.min.js",
   "publishConfig": {
     "registry": "https://npm.pkg.github.com/"
   },

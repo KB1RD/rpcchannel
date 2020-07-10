@@ -4,7 +4,8 @@
 ![GitHub Workflow Status (branch)](https://img.shields.io/github/workflow/status/kb1rd/rpcchannel/Yarn%20CI/dev?label=dev%20build%2Ftest)
 ![GitHub](https://img.shields.io/github/license/kb1rd/rpcchannel)
 
-**Note: This is experimental software ATM. Use with caution.**
+**Note: This is experimental software ATM and is under active development. Use
+with caution. Consider all APIs unstable.**
 
 This assumes that there are only two peers per `RpcChannel`. An `RpcChannel` is
 created with a send function that sends to whichever transport is being used.
