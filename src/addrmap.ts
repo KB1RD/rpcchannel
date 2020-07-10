@@ -69,10 +69,8 @@ class AddressMap<T> {
   }
 
   get(addr: MultistringAddress, wc_values?: string[]): T | undefined {
-    return (
-      getFromAddrMapFlat(this.table, addr, wc_values) ||
-      this.table[DefaultEntryKey]
-    )
+    const value = getFromAddrMapFlat(this.table, addr, wc_values)
+    return isUndef(value) ? this.table[DefaultEntryKey] : value
   }
 
   toString(): string {
@@ -100,4 +98,10 @@ class AddressMap<T> {
   }
 }
 
-export { MultistringAddress, WildcardMultistringAddress, AddressMap }
+export {
+  MultistringAddress,
+  WildcardMultistringAddress,
+  AddressMap,
+  DefaultEntryKey,
+  WildcardEntryKey
+}

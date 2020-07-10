@@ -24,6 +24,7 @@ type SerializableData =
   | SerializableArray
   | SerializableObject
   | Transferable
+  | Error
 
 type SerializedArray = SerializedData[]
 type SerializedObject = { [key: string]: SerializedData }
@@ -100,7 +101,7 @@ function rpcSerialize(
         )
       ) {
         xfer.push(data as Transferable)
-        return data
+        return data as SerializedData
       }
       if (data instanceof Error) {
         return {
@@ -124,7 +125,7 @@ function rpcSerialize(
       })
       return robj
     default:
-      return undefined
+      throw new TypeError(`Cannot serialize unknown type ${typeof data}`)
   }
 }
 
@@ -241,12 +242,19 @@ class RpcHandlerRegistry implements HandleRegistry {
       }
     } while ((obj = Object.getPrototypeOf(obj)))
   }
-  unregisterAll(obj: BaseRegisteredObject): void {
-    for (const func of Object.values(obj)) {
-      if (func[RpcFunctionAddress] && typeof func === 'function') {
-        this.unregister(func[RpcFunctionAddress] as WildcardMultistringAddress)
+  unregisterAll(base: BaseRegisteredObject): void {
+    let obj = base
+    // Based on https://stackoverflow.com/a/31055217/7853604
+    do {
+      for (const k of Object.getOwnPropertyNames(obj)) {
+        const func = obj[k]
+        if (func && func[RpcFunctionAddress] && typeof func === 'function') {
+          this.unregister(
+            func[RpcFunctionAddress] as WildcardMultistringAddress
+          )
+        }
       }
-    }
+    } while ((obj = Object.getPrototypeOf(obj)))
   }
 
   nextSeqAddr(): MultistringAddress {
@@ -367,7 +375,7 @@ class RpcChannel implements HandleRegistry {
             reject(error)
           }
         } else {
-          resolve(data)
+          resolve(data as SerializedData)
         }
         this.unregister(return_addr)
       })
@@ -452,9 +460,14 @@ export {
   AccessDeniedError,
   ForwardedError,
   AccessPolicy,
+  RpcHandlerRegistry,
   RpcChannel,
   RpcMessage,
   RpcAddress,
+  RpcFunction,
   RpcFunctionAddress,
-  RpcAccessor
+  RpcAccessor,
+  SerializableData,
+  SerializedData,
+  BaseRegisteredObject
 }
