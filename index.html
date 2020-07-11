@@ -1,0 +1,323 @@
+<!doctype html>
+<html class="default no-js">
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<title>rpcchannel</title>
+	<meta name="description" content="Documentation for rpcchannel">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" href="assets/css/main.css">
+</head>
+<body>
+<header>
+	<div class="tsd-page-toolbar">
+		<div class="container">
+			<div class="table-wrap">
+				<div class="table-cell" id="tsd-search" data-index="assets/js/search.json" data-base=".">
+					<div class="field">
+						<label for="tsd-search-field" class="tsd-widget search no-caption">Search</label>
+						<input id="tsd-search-field" type="text" />
+					</div>
+					<ul class="results">
+						<li class="state loading">Preparing search index...</li>
+						<li class="state failure">The search index is not available</li>
+					</ul>
+					<a href="index.html" class="title">rpcchannel</a>
+				</div>
+				<div class="table-cell" id="tsd-widgets">
+					<div id="tsd-filter">
+						<a href="#" class="tsd-widget options no-caption" data-toggle="options">Options</a>
+						<div class="tsd-filter-group">
+							<div class="tsd-select" id="tsd-filter-visibility">
+								<span class="tsd-select-label">All</span>
+								<ul class="tsd-select-list">
+									<li data-value="public">Public</li>
+									<li data-value="protected">Public/Protected</li>
+									<li data-value="private" class="selected">All</li>
+								</ul>
+							</div>
+							<input type="checkbox" id="tsd-filter-inherited" checked />
+							<label class="tsd-widget" for="tsd-filter-inherited">Inherited</label>
+							<input type="checkbox" id="tsd-filter-externals" checked />
+							<label class="tsd-widget" for="tsd-filter-externals">Externals</label>
+							<input type="checkbox" id="tsd-filter-only-exported" />
+							<label class="tsd-widget" for="tsd-filter-only-exported">Only exported</label>
+						</div>
+					</div>
+					<a href="#" class="tsd-widget menu no-caption" data-toggle="menu">Menu</a>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="tsd-page-title">
+		<div class="container">
+			<ul class="tsd-breadcrumb">
+				<li>
+					<a href="globals.html">Globals</a>
+				</li>
+			</ul>
+			<h1>rpcchannel</h1>
+		</div>
+	</div>
+</header>
+<div class="container container-main">
+	<div class="row">
+		<div class="col-8 col-content">
+			<div class="tsd-panel tsd-typography">
+				<a href="#rpcchannel" id="rpcchannel" style="color: inherit; text-decoration: none;">
+					<h1>rpcchannel</h1>
+				</a>
+				<blockquote>
+					<p>A simple system for doing remote procedure calls (RPCs) in JS/TS.
+						<img src="https://img.shields.io/github/v/release/kb1rd/rpcchannel" alt="GitHub release (latest SemVer)">
+						<img src="https://img.shields.io/github/workflow/status/kb1rd/rpcchannel/Yarn%20CI/dev?label=dev%20build%2Ftest" alt="GitHub Workflow Status (branch)">
+					<img src="https://img.shields.io/github/license/kb1rd/rpcchannel" alt="GitHub"></p>
+				</blockquote>
+				<p><strong>Note: This is experimental software ATM and is under active development. Use
+				with caution. Consider all APIs unstable.</strong></p>
+				<p>This assumes that there are only two peers per <code>RpcChannel</code>. An <code>RpcChannel</code> is
+					created with a send function that sends to whichever transport is being used.
+					This could literally just be a wrapper for a <code>MessagePort</code>&#39;s <code>postMessage</code>
+					function. Messages are processed by calling the <code>recieve</code> function on the
+				<code>RpcChannel</code> object.</p>
+				<p>Each RPC function has a particular address, which is just an array of multiple
+				strings. They are determined using the Java package naming convention, like so:</p>
+				<pre><code class="language-json">[<span class="hljs-string">&quot;net&quot;</span>, <span class="hljs-string">&quot;kb1rd&quot;</span>, <span class="hljs-string">&quot;mycoolprotocol&quot;</span>]</code></pre>
+				<p>Here&#39;s the most basic example: (in Typescript. Just remove the type annotations
+				for normal JS)</p>
+				<pre><code class="language-typescript"><span class="hljs-keyword">const</span> {
+  RpcChannel,
+  RpcAddress,
+  EnforceMethodArgSchema
+} = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;@kb1rd/rpcchannel&#x27;</span>)
+
+<span class="hljs-comment">// Just pretend these are in different browsing contexts :P</span>
+<span class="hljs-keyword">const</span> a: RpcChannel = <span class="hljs-keyword">new</span> RpcChannel(<span class="hljs-function">(<span class="hljs-params">msg</span>) =&gt;</span>
+  b.receive(<span class="hljs-built_in">JSON</span>.parse(<span class="hljs-built_in">JSON</span>.stringify(msg)))
+)
+<span class="hljs-keyword">const</span> b = <span class="hljs-keyword">new</span> RpcChannel(<span class="hljs-function">(<span class="hljs-params">msg</span>) =&gt;</span> a.receive(<span class="hljs-built_in">JSON</span>.parse(<span class="hljs-built_in">JSON</span>.stringify(msg))))
+
+b.register([<span class="hljs-string">&#x27;net&#x27;</span>, <span class="hljs-string">&#x27;kb1rd&#x27;</span>, <span class="hljs-string">&#x27;sayhi&#x27;</span>], (): <span class="hljs-function"><span class="hljs-params">string</span> =&gt;</span> {
+  <span class="hljs-built_in">console</span>.log(<span class="hljs-string">&#x27;Hi!&#x27;</span>)
+  <span class="hljs-keyword">return</span> <span class="hljs-string">&#x27;hi&#x27;</span>
+})
+
+<span class="hljs-comment">// Send is unidirectional and does not wait for a response</span>
+a.send([<span class="hljs-string">&#x27;net&#x27;</span>, <span class="hljs-string">&#x27;kb1rd&#x27;</span>, <span class="hljs-string">&#x27;sayhi&#x27;</span>]) <span class="hljs-comment">// Prints &quot;Hi!&quot;</span>
+
+<span class="hljs-keyword">async</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">test</span>(<span class="hljs-params"></span>) </span>{
+  <span class="hljs-comment">// Prints &quot;Hi!&quot; and waits for the remote function to terminate</span>
+  <span class="hljs-keyword">const</span> value = <span class="hljs-keyword">await</span> a.call([<span class="hljs-string">&#x27;net&#x27;</span>, <span class="hljs-string">&#x27;kb1rd&#x27;</span>, <span class="hljs-string">&#x27;sayhi&#x27;</span>])
+  <span class="hljs-built_in">console</span>.log(value) <span class="hljs-comment">// Prints &quot;hi&quot;</span>
+}
+test()</code></pre>
+				<p>A part of the address can also be <code>undefined</code>, which acts as a wildcard, like so:</p>
+				<pre><code class="language-typescript"><span class="hljs-keyword">const</span> {
+  RpcChannel,
+  RpcAddress,
+  EnforceMethodArgSchema
+} = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;@kb1rd/rpcchannel&#x27;</span>)
+
+<span class="hljs-comment">// Just pretend these are in different browsing contexts :P</span>
+<span class="hljs-keyword">const</span> a: RpcChannel = <span class="hljs-keyword">new</span> RpcChannel(<span class="hljs-function">(<span class="hljs-params">msg</span>) =&gt;</span>
+  b.receive(<span class="hljs-built_in">JSON</span>.parse(<span class="hljs-built_in">JSON</span>.stringify(msg)))
+)
+<span class="hljs-keyword">const</span> b = <span class="hljs-keyword">new</span> RpcChannel(<span class="hljs-function">(<span class="hljs-params">msg</span>) =&gt;</span> a.receive(<span class="hljs-built_in">JSON</span>.parse(<span class="hljs-built_in">JSON</span>.stringify(msg))))
+
+b.register([<span class="hljs-string">&#x27;net&#x27;</span>, <span class="hljs-string">&#x27;kb1rd&#x27;</span>, <span class="hljs-string">&#x27;say&#x27;</span>, <span class="hljs-literal">undefined</span>], <span class="hljs-function">(<span class="hljs-params">channel, wc</span>) =&gt;</span> {
+  <span class="hljs-built_in">console</span>.log(wc[<span class="hljs-number">0</span>])
+})
+
+a.send([<span class="hljs-string">&#x27;net&#x27;</span>, <span class="hljs-string">&#x27;kb1rd&#x27;</span>, <span class="hljs-string">&#x27;say&#x27;</span>, <span class="hljs-string">&#x27;Hello!&#x27;</span>]) <span class="hljs-comment">// Prints &quot;Hello!&quot;</span></code></pre>
+				<p>Note the arguments of the function. <code>channel</code> is the RPC channel that recieved
+					the call, and <code>wc</code> is an array of values for wildcards. Wildcards can be
+				filtered by permissions, whereas arguments cannot be.</p>
+				<p>Here&#39;s an example of setting permissions to a particular endpoint:</p>
+				<pre><code class="language-typescript"><span class="hljs-keyword">const</span> {
+  RpcChannel,
+  RpcAddress,
+  EnforceMethodArgSchema,
+  AccessPolicy
+} = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;@kb1rd/rpcchannel&#x27;</span>)
+
+<span class="hljs-comment">// Just pretend these are in different browsing contexts :P</span>
+<span class="hljs-keyword">const</span> a: RpcChannel = <span class="hljs-keyword">new</span> RpcChannel(<span class="hljs-function">(<span class="hljs-params">msg</span>) =&gt;</span>
+  b.receive(<span class="hljs-built_in">JSON</span>.parse(<span class="hljs-built_in">JSON</span>.stringify(msg)))
+)
+<span class="hljs-keyword">const</span> b = <span class="hljs-keyword">new</span> RpcChannel(<span class="hljs-function">(<span class="hljs-params">msg</span>) =&gt;</span> a.receive(<span class="hljs-built_in">JSON</span>.parse(<span class="hljs-built_in">JSON</span>.stringify(msg))))
+
+b.register([<span class="hljs-string">&#x27;net&#x27;</span>, <span class="hljs-string">&#x27;kb1rd&#x27;</span>, <span class="hljs-string">&#x27;say&#x27;</span>, <span class="hljs-literal">undefined</span>], <span class="hljs-function">(<span class="hljs-params">channel, wc</span>) =&gt;</span> {
+  <span class="hljs-built_in">console</span>.log(wc[<span class="hljs-number">0</span>])
+})
+
+b.setPolicy([<span class="hljs-string">&#x27;net&#x27;</span>, <span class="hljs-string">&#x27;kb1rd&#x27;</span>, <span class="hljs-string">&#x27;say&#x27;</span>, <span class="hljs-string">&#x27;badword&#x27;</span>], AccessPolicy.DENY)
+
+a.send([<span class="hljs-string">&#x27;net&#x27;</span>, <span class="hljs-string">&#x27;kb1rd&#x27;</span>, <span class="hljs-string">&#x27;say&#x27;</span>, <span class="hljs-string">&#x27;badword&#x27;</span>]) <span class="hljs-comment">// Throws an error</span></code></pre>
+				<p>Wildcards can also be used with policies. In addition, the default policy can
+				be set to <code>DENY</code> with <code>b.setPolicy([], AccessPolicy.DENY)</code>.</p>
+				<p>Functions can also be given arguments</p>
+				<pre><code class="language-typescript"><span class="hljs-keyword">const</span> {
+  RpcChannel,
+  RpcAddress,
+  EnforceArgumentSchema
+} = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;@kb1rd/rpcchannel&#x27;</span>)
+
+<span class="hljs-comment">// Just pretend these are in different browsing contexts :P</span>
+<span class="hljs-keyword">const</span> a: RpcChannel = <span class="hljs-keyword">new</span> RpcChannel(<span class="hljs-function">(<span class="hljs-params">msg</span>) =&gt;</span>
+  b.receive(<span class="hljs-built_in">JSON</span>.parse(<span class="hljs-built_in">JSON</span>.stringify(msg)))
+)
+<span class="hljs-keyword">const</span> b = <span class="hljs-keyword">new</span> RpcChannel(<span class="hljs-function">(<span class="hljs-params">msg</span>) =&gt;</span> a.receive(<span class="hljs-built_in">JSON</span>.parse(<span class="hljs-built_in">JSON</span>.stringify(msg))))
+
+b.register(
+  [<span class="hljs-string">&#x27;net&#x27;</span>, <span class="hljs-string">&#x27;kb1rd&#x27;</span>, <span class="hljs-string">&#x27;add&#x27;</span>],
+  <span class="hljs-comment">// This enforces a JSON schema on the function&#x27;s arguments</span>
+  EnforceArgumentSchema(
+    {
+      <span class="hljs-keyword">type</span>: <span class="hljs-string">&#x27;array&#x27;</span>,
+      items: [
+        { <span class="hljs-keyword">type</span>: <span class="hljs-string">&#x27;object&#x27;</span> },
+        { <span class="hljs-keyword">type</span>: <span class="hljs-string">&#x27;array&#x27;</span>, items: { <span class="hljs-keyword">type</span>: <span class="hljs-string">&#x27;string&#x27;</span> } },
+        { <span class="hljs-keyword">type</span>: <span class="hljs-string">&#x27;number&#x27;</span> },
+        { <span class="hljs-keyword">type</span>: <span class="hljs-string">&#x27;number&#x27;</span> }
+      ]
+    },
+    <span class="hljs-comment">// Arguments come after then channel and wildcards</span>
+    (channel, wc, a: <span class="hljs-built_in">number</span>, b: <span class="hljs-built_in">number</span>) =&gt; (a + b)
+  )
+)
+
+<span class="hljs-keyword">async</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">test</span>(<span class="hljs-params"></span>) </span>{
+  <span class="hljs-comment">// The last array is the arguments to pass to the function</span>
+  <span class="hljs-keyword">const</span> value = <span class="hljs-keyword">await</span> a.call([<span class="hljs-string">&#x27;net&#x27;</span>, <span class="hljs-string">&#x27;kb1rd&#x27;</span>, <span class="hljs-string">&#x27;add&#x27;</span>], [<span class="hljs-number">1</span>, <span class="hljs-number">2</span>])
+  <span class="hljs-built_in">console</span>.log(value) <span class="hljs-comment">// Prints &quot;3&quot;</span>
+}
+test()</code></pre>
+				<p>Finally, here&#39;s a big example demonstrating <code>registerAll</code>:</p>
+				<pre><code class="language-typescript"><span class="hljs-keyword">const</span> {
+  RpcChannel,
+  RpcAddress,
+  EnforceMethodArgSchema
+} = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;@kb1rd/rpcchannel&#x27;</span>)
+
+<span class="hljs-keyword">const</span> a: RpcChannel = <span class="hljs-keyword">new</span> RpcChannel(<span class="hljs-function">(<span class="hljs-params">msg</span>) =&gt;</span>
+  b.receive(<span class="hljs-built_in">JSON</span>.parse(<span class="hljs-built_in">JSON</span>.stringify(msg)))
+)
+<span class="hljs-keyword">const</span> b = <span class="hljs-keyword">new</span> RpcChannel(<span class="hljs-function">(<span class="hljs-params">msg</span>) =&gt;</span> a.receive(<span class="hljs-built_in">JSON</span>.parse(<span class="hljs-built_in">JSON</span>.stringify(msg))))
+
+<span class="hljs-keyword">class</span> TestClass {
+  test = <span class="hljs-number">1234</span>
+  <span class="hljs-comment">// RpcAddress decorator always comes first since `EnforceMethodArgSchema`</span>
+  <span class="hljs-comment">// will overwrite it</span>
+  <span class="hljs-meta">@RpcAddress</span>([<span class="hljs-string">&#x27;net&#x27;</span>, <span class="hljs-string">&#x27;kb1rd&#x27;</span>, <span class="hljs-string">&#x27;addto&#x27;</span>])
+  <span class="hljs-meta">@EnforceMethodArgSchema</span>({
+    <span class="hljs-keyword">type</span>: <span class="hljs-string">&#x27;array&#x27;</span>,
+    items: [
+      { <span class="hljs-keyword">type</span>: <span class="hljs-string">&#x27;object&#x27;</span> },
+      { <span class="hljs-keyword">type</span>: <span class="hljs-string">&#x27;array&#x27;</span>, items: { <span class="hljs-keyword">type</span>: <span class="hljs-string">&#x27;string&#x27;</span> } },
+      { <span class="hljs-keyword">type</span>: <span class="hljs-string">&#x27;number&#x27;</span> }
+    ]
+  })
+  addto(chan: RpcChannel, wc: <span class="hljs-built_in">string</span>[], n: <span class="hljs-built_in">number</span>): <span class="hljs-built_in">number</span> {
+    <span class="hljs-keyword">return</span> (<span class="hljs-built_in">this</span>.test += n)
+  }
+  <span class="hljs-meta">@RpcAddress</span>([<span class="hljs-string">&#x27;net&#x27;</span>, <span class="hljs-string">&#x27;kb1rd&#x27;</span>, <span class="hljs-string">&#x27;greet&#x27;</span>, <span class="hljs-literal">undefined</span>])
+  <span class="hljs-meta">@EnforceMethodArgSchema</span>({
+    <span class="hljs-keyword">type</span>: <span class="hljs-string">&#x27;array&#x27;</span>,
+    items: [{ <span class="hljs-keyword">type</span>: <span class="hljs-string">&#x27;object&#x27;</span> }, { <span class="hljs-keyword">type</span>: <span class="hljs-string">&#x27;array&#x27;</span>, items: { <span class="hljs-keyword">type</span>: <span class="hljs-string">&#x27;string&#x27;</span> } }]
+  })
+  greet(chan: RpcChannel, wc: <span class="hljs-built_in">string</span>[]): <span class="hljs-built_in">string</span> {
+    <span class="hljs-keyword">return</span> <span class="hljs-string">`Hello, <span class="hljs-subst">${wc[<span class="hljs-number">0</span>]}</span>`</span>
+  }
+}
+
+<span class="hljs-comment">// This registers all members of an object with `@RpcAddress` applied to them</span>
+<span class="hljs-comment">// You can also set the RpcFunctionAddress (imported from `rpcchannel`) on a</span>
+<span class="hljs-comment">// member function to the address you&#x27;d like and it will be seen by</span>
+<span class="hljs-comment">// `registerAll` (@RpcAddress literally just does</span>
+<span class="hljs-comment">// `func[RpcFunctionAddress] = address`)</span>
+b.registerAll(<span class="hljs-keyword">new</span> TestClass())
+
+<span class="hljs-keyword">async</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">test</span>(<span class="hljs-params"></span>) </span>{
+  a.send([<span class="hljs-string">&#x27;net&#x27;</span>, <span class="hljs-string">&#x27;kb1rd&#x27;</span>, <span class="hljs-string">&#x27;sayhi&#x27;</span>]) <span class="hljs-comment">// &quot;Hi!&quot;</span>
+
+  <span class="hljs-keyword">let</span> data = <span class="hljs-keyword">await</span> a.call([<span class="hljs-string">&#x27;net&#x27;</span>, <span class="hljs-string">&#x27;kb1rd&#x27;</span>, <span class="hljs-string">&#x27;addto&#x27;</span>], [<span class="hljs-number">1</span>])
+  <span class="hljs-built_in">console</span>.log(data) <span class="hljs-comment">// &quot;1235&quot;</span>
+
+  <span class="hljs-comment">// Access `call_obj` to get an object that will return a function for every</span>
+  <span class="hljs-comment">// string you can access. This is just a prettier way of doing `call`.</span>
+  data = <span class="hljs-keyword">await</span> a.call_obj.net.kb1rd.addto(<span class="hljs-number">20</span>)
+  <span class="hljs-built_in">console</span>.log(data) <span class="hljs-comment">// &quot;1255&quot;</span>
+
+  <span class="hljs-keyword">try</span> {
+    <span class="hljs-keyword">const</span> data = <span class="hljs-keyword">await</span> a.call([<span class="hljs-string">&#x27;net&#x27;</span>, <span class="hljs-string">&#x27;kb1rd&#x27;</span>, <span class="hljs-string">&#x27;addto&#x27;</span>], [<span class="hljs-string">&#x27;hi&#x27;</span>])
+    <span class="hljs-built_in">console</span>.log(data)
+  } <span class="hljs-keyword">catch</span> (e) {
+    <span class="hljs-built_in">console</span>.error(<span class="hljs-string">&#x27;ERROR:&#x27;</span>, e) <span class="hljs-comment">// &quot;ERROR: ... validation failed&quot;</span>
+  }
+
+  data = <span class="hljs-keyword">await</span> a.call_obj.net.kb1rd.greet[<span class="hljs-string">&#x27;World!&#x27;</span>]()
+  <span class="hljs-built_in">console</span>.log(data) <span class="hljs-comment">// &quot;Hello, World!&quot;</span>
+}
+test()</code></pre>
+			</div>
+		</div>
+		<div class="col-4 col-menu menu-sticky-wrap menu-highlight">
+			<nav class="tsd-navigation primary">
+				<ul>
+					<li class="globals  ">
+						<a href="globals.html"><em>Globals</em></a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/_addrmap_.html">&quot;addrmap&quot;</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/_core_.html">&quot;core&quot;</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/_index_.html">&quot;index&quot;</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/_schema_.html">&quot;schema&quot;</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/_utils_.html">&quot;utils&quot;</a>
+					</li>
+				</ul>
+			</nav>
+			<nav class="tsd-navigation secondary menu-sticky">
+				<ul class="before-current">
+				</ul>
+			</nav>
+		</div>
+	</div>
+</div>
+<footer class="with-border-bottom">
+	<div class="container">
+		<h2>Legend</h2>
+		<div class="tsd-legend-group">
+			<ul class="tsd-legend">
+				<li class="tsd-kind-namespace"><span class="tsd-kind-icon">Namespace</span></li>
+				<li class="tsd-kind-object-literal"><span class="tsd-kind-icon">Object literal</span></li>
+				<li class="tsd-kind-variable"><span class="tsd-kind-icon">Variable</span></li>
+				<li class="tsd-kind-function"><span class="tsd-kind-icon">Function</span></li>
+				<li class="tsd-kind-function tsd-has-type-parameter"><span class="tsd-kind-icon">Function with type parameter</span></li>
+				<li class="tsd-kind-type-alias"><span class="tsd-kind-icon">Type alias</span></li>
+				<li class="tsd-kind-type-alias tsd-has-type-parameter"><span class="tsd-kind-icon">Type alias with type parameter</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-class"><span class="tsd-kind-icon">Class</span></li>
+				<li class="tsd-kind-class tsd-has-type-parameter"><span class="tsd-kind-icon">Class with type parameter</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-interface"><span class="tsd-kind-icon">Interface</span></li>
+			</ul>
+		</div>
+	</div>
+</footer>
+<div class="container tsd-generator">
+	<p>Generated using <a href="https://typedoc.org/" target="_blank">TypeDoc</a></p>
+</div>
+<div class="overlay"></div>
+<script src="assets/js/main.js"></script>
+</body>
+</html>
