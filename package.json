@@ -1,9 +1,9 @@
 {
   "name": "rpcchannel",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "Easy RPC with permission controls",
   "main": "dist/rpcchannel.min.js",
-  "type": "dist/index.d.ts",
+  "types": "dist/index.d.ts",
   "keywords": ["rpc", "messagechannel", "worker"],
   "scripts": {
     "build": "webpack --env dev && webpack --env build && yarn run build:dts",
