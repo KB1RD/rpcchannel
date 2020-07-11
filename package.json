@@ -3,8 +3,11 @@
   "version": "0.1.2",
   "description": "Easy RPC with permission controls",
   "main": "dist/rpcchannel.min.js",
+  "type": "dist/index.d.ts",
+  "keywords": ["rpc", "messagechannel", "worker"],
   "scripts": {
-    "build": "webpack --env dev && webpack --env build",
+    "build": "webpack --env dev && webpack --env build && yarn run build:dts",
+    "build:dts": "tsc --project tsconfig.json --declaration --emitDeclarationOnly --declarationDir dist/",
     "build:docs": "typedoc --mode modules --out .jsdoc src/",
     "dev": "webpack --progress --colors --watch --env dev",
     "check-types": "tsc",

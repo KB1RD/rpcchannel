@@ -1,5 +1,6 @@
 # rpcchannel
 > A simple system for doing remote procedure calls (RPCs) in JS/TS.
+
 ![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/kb1rd/rpcchannel)
 ![GitHub Workflow Status (branch)](https://img.shields.io/github/workflow/status/kb1rd/rpcchannel/Yarn%20CI/dev?label=dev%20build%2Ftest)
 ![GitHub](https://img.shields.io/github/license/kb1rd/rpcchannel)
