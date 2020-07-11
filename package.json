@@ -1,6 +1,6 @@
 {
   "name": "rpcchannel",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Easy RPC with permission controls",
   "main": "dist/rpcchannel.min.js",
   "publishConfig": {
