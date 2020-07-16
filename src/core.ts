@@ -130,6 +130,7 @@ function rpcSerialize(
 }
 
 const RpcFunctionAddress = Symbol('RpcFunctionAddress')
+const RpcRemappedFunction = Symbol('RpcRemappedFunction')
 
 interface WithValidAddressKey {
   [RpcFunctionAddress]?: WildcardMultistringAddress
@@ -144,6 +145,7 @@ interface RpcFunction extends WithValidAddressKey {
   (src: RpcChannel, wildcards: string[], ...args: SerializableData[]):
     | SerializableData
     | Promise<SerializableData>
+  [RpcRemappedFunction]?: RpcFunction
 }
 
 function RpcAddress(address: WildcardMultistringAddress) {
@@ -158,6 +160,59 @@ function RpcAddress(address: WildcardMultistringAddress) {
       throw new TypeError('Cannot mark non-function as RPC function')
     }
     func[RpcFunctionAddress] = address
+  }
+}
+
+function RemapArguments(
+  mapping: ('pass' | 'drop' | 'expand')[],
+  key: string | Symbol | number = RpcRemappedFunction
+) {
+  return function (
+    // eslint-disable-next-line
+    target: any,
+    propertyKey: string,
+    descriptor: PropertyDescriptor
+  ): PropertyDescriptor {
+    const func = descriptor.value
+    if (typeof func !== 'function') {
+      throw new TypeError('Cannot remap arguments for non-function')
+    }
+    // TODO: Replace .remapped with a symbol
+    // eslint-disable-next-line
+    descriptor.value[key as string] = function(...args: any[]) {
+      const it = mapping[Symbol.iterator]()
+      let value: string | undefined = undefined
+      return func.apply(this, args.flatMap((v) => {
+        if (!value) {
+          ;({ value } = it.next())
+        }
+        switch (value) {
+          default:
+          case 'pass':
+            value = undefined
+            return [v]
+          case 'drop':
+            value = undefined
+            return []
+          case 'expand':
+            // eslint-disable-next-line
+            const array: any[] = []
+            if (!v[Symbol.iterator]) {
+              throw new TypeError('Attempted to expand non-iterable')
+            }
+            const exp_it = v[Symbol.iterator]()
+            do {
+              const r = exp_it.next()
+              if (r.done) {
+                throw new TypeError('Expand reached end of array')
+              }
+              array.push(r.value)
+            } while (({ value } = it.next()).value === 'expand')
+            return array
+        }
+      }))
+    }
+    return descriptor
   }
 }
 
@@ -221,6 +276,9 @@ class RpcHandlerRegistry implements HandleRegistry {
   return_seq_id = 0
 
   register(address: WildcardMultistringAddress, func: RpcFunction): void {
+    while (func[RpcRemappedFunction]) {
+      func = func[RpcRemappedFunction] as RpcFunction
+    }
     this.map.put(address, func)
   }
   unregister(address: WildcardMultistringAddress): void {
@@ -231,12 +289,15 @@ class RpcHandlerRegistry implements HandleRegistry {
     // Based on https://stackoverflow.com/a/31055217/7853604
     do {
       for (const k of Object.getOwnPropertyNames(obj)) {
-        const func = obj[k]
+        let func = (obj[k] as RpcFunction)
         if (func && func[RpcFunctionAddress] && typeof func === 'function') {
+          while (func[RpcRemappedFunction]) {
+            func = func[RpcRemappedFunction] as RpcFunction
+          }
           this.register(
             func[RpcFunctionAddress] as WildcardMultistringAddress,
             // eslint-disable-next-line
-            (...args: any) => (func as RpcFunction).apply(base, args)
+            (...args: any) => func.apply(base, args)
           )
         }
       }
@@ -463,7 +524,9 @@ export {
   RpcHandlerRegistry,
   RpcChannel,
   RpcMessage,
+  RpcRemappedFunction,
   RpcAddress,
+  RemapArguments,
   RpcFunction,
   RpcFunctionAddress,
   RpcAccessor,

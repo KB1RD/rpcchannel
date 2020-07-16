@@ -8,7 +8,9 @@ import {
   AccessPolicy,
   RpcChannel,
   RpcMessage,
+  RpcRemappedFunction,
   RpcAddress,
+  RemapArguments,
   RpcFunctionAddress,
   SerializableData,
   SerializedData,
@@ -17,8 +19,6 @@ import {
   RpcHandlerRegistry,
   MultistringAddress
 } from '../src/index'
-
-import { MessageChannel } from 'worker_threads'
 
 describe('[core.ts] rpcSerialize', () => {
   it('defaults to serialization function if present', () => {
@@ -203,17 +203,67 @@ describe('[core.ts] RpcChannel', () => {
     getthis(): Test {
       return this
     }
+
+    @RemapArguments(['drop'], 'rm')
+    remapped_dropfirst(b: string): string {
+      return b
+    }
+    @RemapArguments(['expand', 'expand'], 'rm')
+    remapped_expand(a: string, b: string): string {
+      return a + b
+    }
+    @RemapArguments(['pass', 'pass'], 'rm')
+    remapped_pass(a: string, b: string): string {
+      return a + b
+    }
   }
-  it('register', () => {
-    const func = () => undefined
-    c.register(['net', 'kb1rd', 'test'], func)
-    expect(c.reg.map.get(['net', 'kb1rd', 'test'])).to.be.equal(func)
+  describe('RemapArguments', () => {
+    // Note: These tests do not call the function with `apply`. Always call
+    // with `apply`
+    it('drops correctly', () => {
+      const test = new Test()
+      const res = (
+        test.remapped_dropfirst as unknown as { rm: (...args: any[]) => any }
+      ).rm('hi', '123')
+      expect(res).to.be.equal('123')
+    })
+    it('expands correctly', () => {
+      const test = new Test()
+      const res = (
+        test.remapped_expand as unknown as { rm: (...args: any[]) => any }
+      ).rm(['hi', '123'])
+      expect(res).to.be.equal('hi123')
+    })
+    it('passes correctly', () => {
+      const test = new Test()
+      const res = (
+        test.remapped_pass as unknown as { rm: (...args: any[]) => any }
+      ).rm('hi', '123')
+      expect(res).to.be.equal('hi123')
+    })
   })
-  it('unregister', () => {
-    const func = () => undefined
-    c.register(['net', 'kb1rd', 'test'], func)
-    c.unregister(['net', 'kb1rd', 'test'])
-    expect(c.reg.map.get(['net', 'kb1rd', 'test'])).to.be.undefined
+  describe('register', () => {
+    it('basic register', () => {
+      const func = () => undefined
+      c.register(['net', 'kb1rd', 'test'], func)
+      expect(c.reg.map.get(['net', 'kb1rd', 'test'])).to.be.equal(func)
+    })
+    it('register from remapped function key', () => {
+      const func = () => undefined
+      const func2 = () => undefined
+      func[RpcRemappedFunction] = func2
+
+      c.register(['net', 'kb1rd', 'test'], func)
+      expect(c.reg.map.get(['net', 'kb1rd', 'test'])).to.be.equal(func2)
+    })
+  })
+  describe('unregister', () => {
+    it('unregister by address', () => {
+      const func = () => undefined
+      c.register(['net', 'kb1rd', 'test'], func)
+      c.unregister(['net', 'kb1rd', 'test'])
+      expect(c.reg.map.get(['net', 'kb1rd', 'test'])).to.be.undefined
+    })
   })
   describe('registerAll', () => {
     it('registers to correct endpoint', () => {
