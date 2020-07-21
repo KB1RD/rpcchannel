@@ -10,7 +10,7 @@
     "build:dts": "tsc --project tsconfig.json --declaration --emitDeclarationOnly --declarationDir dist/",
     "build:docs": "typedoc --mode modules --out .jsdoc src/",
     "dev": "webpack --progress --colors --watch --env dev",
-    "check-types": "tsc",
+    "check-types": "tsc --noEmit",
     "test": "mocha --require ./test/babel-register.js --colors ./test/*.spec.ts",
     "test:watch": "mocha --require ./test/babel-register.js --colors -w ./test/*.spec.ts",
     "test:cover": "cross-env NODE_ENV=test nyc mocha --timeout 10000 --require ./test/babel-register.js --require source-map-support/register --recursive --colors ./test/*.spec.ts",

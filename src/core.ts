@@ -8,7 +8,7 @@ import {
   WildcardMultistringAddress,
   AddressMap
 } from './addrmap'
-import { isDefined, isUndef } from './utils'
+import { isDefined } from './utils'
 
 const toRpcSerialized = Symbol('ChannelRpcSerialize')
 
@@ -166,7 +166,7 @@ function RpcAddress(address: WildcardMultistringAddress) {
 
 function RemapArguments(
   mapping: ('pass' | 'drop' | 'expand')[],
-  key: string | Symbol | number = RpcRemappedFunction
+  key: string | symbol | number = RpcRemappedFunction
 ) {
   return function (
     // eslint-disable-next-line
@@ -183,35 +183,38 @@ function RemapArguments(
     descriptor.value[key as string] = function(...args: any[]) {
       const it = mapping[Symbol.iterator]()
       let value: string | undefined = undefined
-      return func.apply(this, args.flatMap((v) => {
-        if (!value) {
-          ;({ value } = it.next())
-        }
-        switch (value) {
-          default:
-          case 'pass':
-            value = undefined
-            return [v]
-          case 'drop':
-            value = undefined
-            return []
-          case 'expand':
-            // eslint-disable-next-line
-            const array: any[] = []
-            if (!v[Symbol.iterator]) {
-              throw new TypeError('Attempted to expand non-iterable')
-            }
-            const exp_it = v[Symbol.iterator]()
-            do {
-              const r = exp_it.next()
-              if (r.done) {
-                throw new TypeError('Expand reached end of array')
+      return func.apply(
+        this,
+        args.flatMap((v) => {
+          if (!value) {
+            ;({ value } = it.next())
+          }
+          switch (value) {
+            default:
+            case 'pass':
+              value = undefined
+              return [v]
+            case 'drop':
+              value = undefined
+              return []
+            case 'expand':
+              // eslint-disable-next-line
+              const array: any[] = []
+              if (!v[Symbol.iterator]) {
+                throw new TypeError('Attempted to expand non-iterable')
               }
-              array.push(r.value)
-            } while (({ value } = it.next()).value === 'expand')
-            return array
-        }
-      }))
+              const exp_it = v[Symbol.iterator]()
+              do {
+                const r = exp_it.next()
+                if (r.done) {
+                  throw new TypeError('Expand reached end of array')
+                }
+                array.push(r.value)
+              } while (({ value } = it.next()).value === 'expand')
+              return array
+          }
+        })
+      )
     }
     return descriptor
   }
@@ -293,7 +296,7 @@ class RpcHandlerRegistry implements HandleRegistry {
     // Based on https://stackoverflow.com/a/31055217/7853604
     do {
       for (const k of Object.getOwnPropertyNames(obj)) {
-        const func = (obj[k] as RpcFunction)
+        const func = obj[k] as RpcFunction
         if (func && func[RpcFunctionAddress] && typeof func === 'function') {
           let tgt = func
           while (tgt[RpcRemappedFunction]) {
@@ -497,7 +500,9 @@ class RpcChannel implements HandleRegistry {
       }
     })
 
-    const getNext = async (): Promise<[SerializedData, SerializedData | Error, boolean]> => {
+    const getNext = async (): Promise<
+      [SerializedData, SerializedData | Error, boolean]
+    > => {
       if (!buffer.length) {
         await new Promise((res) => (onNewData = res))
         onNewData = undefined
@@ -505,7 +510,7 @@ class RpcChannel implements HandleRegistry {
       return buffer.shift() as [SerializedData, SerializedData | Error, boolean]
     }
 
-    return (async function*() {
+    return (async function* () {
       while (true) {
         const [d, e, c] = await getNext()
         if (e) {
@@ -574,7 +579,7 @@ class RpcChannel implements HandleRegistry {
               a: MultistringAddress,
               d: SerializableData,
               e: Error | undefined,
-              set_done: boolean = false
+              set_done = false
             ): void => {
               if (!done) {
                 this.send(a, [d, e, set_done || Boolean(e)])
@@ -588,19 +593,18 @@ class RpcChannel implements HandleRegistry {
             }
 
             if (data instanceof Promise) {
-              data
-                .then(
-                  (d) => {
-                    send(addr, d, undefined, false)
-                    send(addr, undefined, undefined, true)
-                  },
-                  (e) => send(addr, undefined, e)
-                )
+              data.then(
+                (d) => {
+                  send(addr, d, undefined, false)
+                  send(addr, undefined, undefined, true)
+                },
+                (e) => send(addr, undefined, e)
+              )
             } else if ((data as ItType)[Symbol.asyncIterator]) {
               registerStopHandler()
-              ;(async function() {
+              ;(async function () {
                 try {
-                  for await(const d of data as ItType) {
+                  for await (const d of data as ItType) {
                     send(addr, d, undefined, false)
                     if (done) {
                       return
@@ -640,12 +644,14 @@ class RpcChannel implements HandleRegistry {
             if (data instanceof Promise) {
               sendPromise(data)
             } else if (isGenerator(data)) {
-              sendPromise(new Promise((res, rej) => {
-                (data as ItType).next().then(
-                  ({ value }) => res(value),
-                  (err) => rej(err)
+              sendPromise(
+                new Promise((res, rej) =>
+                  (data as ItType).next().then(
+                    ({ value }) => res(value),
+                    (err) => rej(err)
+                  )
                 )
-              }))
+              )
             } else {
               this.send(addr, [data as SerializableData, undefined])
             }
