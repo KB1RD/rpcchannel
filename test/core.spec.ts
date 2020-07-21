@@ -593,6 +593,28 @@ describe('[core.ts] RpcChannel', () => {
       const data = await gen.next()
       expect(data.done).to.be.equal(true)
     })
+    it('stops generator if `return` called', () => {
+      const gen = c.generate(['net', 'kb1rd', 'hello'], [])
+
+      gen.return()
+      expect(sent_msgs.length).to.be.equal(2)
+      const raddr = sent_msgs[0][0].return_addr as MultistringAddress
+      expect(sent_msgs[1][0].to).to.be.deep.equal(['_', 'stopgen', ...raddr])
+      expect(c.reg.map.get(
+        sent_msgs[0][0].return_addr as MultistringAddress
+      )).to.be.undefined
+    })
+    it('stops generator if `throw` called', () => {
+      const gen = c.generate(['net', 'kb1rd', 'hello'], [])
+
+      gen.throw('hi')
+      expect(sent_msgs.length).to.be.equal(2)
+      const raddr = sent_msgs[0][0].return_addr as MultistringAddress
+      expect(sent_msgs[1][0].to).to.be.deep.equal(['_', 'stopgen', ...raddr])
+      expect(c.reg.map.get(
+        sent_msgs[0][0].return_addr as MultistringAddress
+      )).to.be.undefined
+    })
     it('unregisters on completion', async () => {
       const gen = c.generate(['net', 'kb1rd', 'hello'], [])
 

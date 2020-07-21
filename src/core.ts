@@ -453,7 +453,12 @@ class RpcChannel implements HandleRegistry {
   }
 
   /**
-   * Returns an async generator.
+   * Returns an async generator. This supports only `yield`ing values: ATM,
+   * returned values and `yield`ed arguments are not supported. **You also must
+   * manually deallocate the generator once you're done!** Yes, manual memory
+   * management. If you don't manually deallocate, the listeners on both ends
+   * will remain allocated leading to memory leaks. To deallocate, call the
+   * `return` or `throw` functions on the generator.
    */
   generate(
     to: MultistringAddress,
@@ -510,7 +515,7 @@ class RpcChannel implements HandleRegistry {
       return buffer.shift() as [SerializedData, SerializedData | Error, boolean]
     }
 
-    return (async function* () {
+    const gen = (async function* () {
       while (true) {
         const [d, e, c] = await getNext()
         if (e) {
@@ -524,6 +529,25 @@ class RpcChannel implements HandleRegistry {
         }
       }
     })()
+
+    const stop = (): void => {
+      this.send(['_', 'stopgen', ...return_addr], [])
+      onDone()
+    }
+
+    const original_return = gen.return
+    const original_throw = gen.throw
+    return Object.assign(gen, {
+      return(): Promise<IteratorResult<SerializableData, void>> {
+        stop()
+        return original_return.apply(gen, [undefined as void])
+      },
+      // eslint-disable-next-line
+      throw(e: any): Promise<IteratorResult<SerializableData, void>> {
+        stop()
+        return original_throw.apply(gen, [e])
+      }
+    })
   }
 
   get call_obj(): RpcAccessor {
