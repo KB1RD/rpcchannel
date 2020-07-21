@@ -136,16 +136,18 @@ interface WithValidAddressKey {
   [RpcFunctionAddress]?: WildcardMultistringAddress
 }
 
+type RpcResult =
+  | SerializableData
+  | Promise<SerializableData>
+  | AsyncGenerator<SerializableData, void, void>
+
 /**
  * A destination function for Remote Procedure Calls (RPCs).
  * @param src The source `RpcChannel`
  * @param wildcards Any wildcards that were used in resolution of this function
  */
 interface RpcFunction extends WithValidAddressKey {
-  (src: RpcChannel, wildcards: string[], ...args: SerializedData[]):
-    | SerializableData
-    | Promise<SerializableData>
-    | AsyncGenerator<SerializableData, void, void>
+  (src: RpcChannel, wildcards: string[], ...args: SerializedData[]): RpcResult
   [RpcRemappedFunction]?: RpcFunction
 }
 
@@ -584,6 +586,14 @@ class RpcChannel implements HandleRegistry {
       data?: SerializableData | Promise<SerializableData> | ItType,
       error?: SerializableData
     ): void => {
+      // eslint-disable-next-line
+      const isGenerator = (data: any): boolean => {
+        return (
+          data && 
+          (data as ItType)[Symbol.asyncIterator] &&
+          typeof (data as ItType).next === 'function'
+        )
+      }
       if (val.return_addr) {
         const addr = val.return_addr
 
@@ -624,7 +634,7 @@ class RpcChannel implements HandleRegistry {
                 },
                 (e) => send(addr, undefined, e)
               )
-            } else if ((data as ItType)[Symbol.asyncIterator]) {
+            } else if (isGenerator(data)) {
               registerStopHandler()
               ;(async function () {
                 try {
@@ -649,14 +659,6 @@ class RpcChannel implements HandleRegistry {
             if (error) {
               this.send(addr, [undefined, error])
               return
-            }
-
-            // eslint-disable-next-line
-            const isGenerator = (data: any): boolean => {
-              return (
-                (data as ItType)[Symbol.asyncIterator] &&
-                typeof (data as ItType).next === 'function'
-              )
             }
 
             const sendPromise = (data: Promise<SerializableData>): void => {
@@ -695,14 +697,17 @@ class RpcChannel implements HandleRegistry {
 
     const wc: string[] = []
     const func = this.reg.map.get(val.to, wc)
+    let data: RpcResult
     try {
       if (!func) {
         throw new TypeError('Function at address is undefined')
       }
-      maybeReturn((func as RpcFunction)(this, wc, ...val.args))
+      data = (func as RpcFunction)(this, wc, ...val.args)
     } catch (e) {
       maybeReturn(undefined, e)
+      return
     }
+    maybeReturn(data)
   }
 }
 
