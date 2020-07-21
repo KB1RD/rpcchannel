@@ -8,7 +8,7 @@ import {
   WildcardMultistringAddress,
   AddressMap
 } from './addrmap'
-import { isDefined } from './utils'
+import { isDefined, isUndef } from './utils'
 
 const toRpcSerialized = Symbol('ChannelRpcSerialize')
 
@@ -142,9 +142,10 @@ interface WithValidAddressKey {
  * @param wildcards Any wildcards that were used in resolution of this function
  */
 interface RpcFunction extends WithValidAddressKey {
-  (src: RpcChannel, wildcards: string[], ...args: SerializableData[]):
+  (src: RpcChannel, wildcards: string[], ...args: SerializedData[]):
     | SerializableData
     | Promise<SerializableData>
+    | AsyncGenerator<SerializableData, void, void>
   [RpcRemappedFunction]?: RpcFunction
 }
 
@@ -224,6 +225,7 @@ interface RpcMessage {
   to: MultistringAddress
   args: SerializedData[]
   return_addr?: MultistringAddress
+  return_type?: 'promise' | 'generator'
 }
 
 namespace RpcMessage {
@@ -232,8 +234,10 @@ namespace RpcMessage {
     properties: {
       to: { type: 'array', items: { type: 'string' } },
       args: { type: 'array' },
-      return_addr: { type: 'array', items: { type: 'string' } }
-    }
+      return_addr: { type: 'array', items: { type: 'string' } },
+      return_type: { type: 'string', enum: ['promise', 'generator'] }
+    },
+    required: ['to', 'args']
   }
 }
 
@@ -289,15 +293,16 @@ class RpcHandlerRegistry implements HandleRegistry {
     // Based on https://stackoverflow.com/a/31055217/7853604
     do {
       for (const k of Object.getOwnPropertyNames(obj)) {
-        let func = (obj[k] as RpcFunction)
+        const func = (obj[k] as RpcFunction)
         if (func && func[RpcFunctionAddress] && typeof func === 'function') {
-          while (func[RpcRemappedFunction]) {
-            func = func[RpcRemappedFunction] as RpcFunction
+          let tgt = func
+          while (tgt[RpcRemappedFunction]) {
+            tgt = tgt[RpcRemappedFunction] as RpcFunction
           }
           this.register(
             func[RpcFunctionAddress] as WildcardMultistringAddress,
             // eslint-disable-next-line
-            (...args: any) => func.apply(base, args)
+            (...args: any) => tgt.apply(base, args)
           )
         }
       }
@@ -444,6 +449,78 @@ class RpcChannel implements HandleRegistry {
     })
   }
 
+  /**
+   * Returns an async generator.
+   */
+  generate(
+    to: MultistringAddress,
+    args: SerializableData[] = []
+  ): AsyncGenerator<SerializedData, void, void> {
+    const return_addr = this.reg.nextSeqAddr()
+
+    this.send(to, args, return_addr)
+
+    // Now, create the generator. If this wasn't done, the above code would
+    // only be run when `next` was called
+    const buffer: [SerializedData, SerializedData | Error, boolean][] = []
+    let onNewData: (() => void) | undefined
+
+    const onDone = () => {
+      this.unregister(return_addr)
+    }
+    this.register(return_addr, (channel, wc, data, error, done) => {
+      if (channel !== this) {
+        onDone()
+        buffer.push([
+          undefined,
+          new InvalidChannelError(
+            'Yield value was sent through the wrong channel'
+          ),
+          true
+        ])
+      } else {
+        if (error) {
+          onDone()
+        }
+        if ((error as { name: string })?.name) {
+          buffer.push([
+            data,
+            Object.assign(new ForwardedError(), error),
+            Boolean(done)
+          ])
+        } else {
+          buffer.push([data, error, Boolean(done)])
+        }
+      }
+      if (onNewData) {
+        onNewData()
+      }
+    })
+
+    const getNext = async (): Promise<[SerializedData, SerializedData | Error, boolean]> => {
+      if (!buffer.length) {
+        await new Promise((res) => (onNewData = res))
+        onNewData = undefined
+      }
+      return buffer.shift() as [SerializedData, SerializedData | Error, boolean]
+    }
+
+    return (async function*() {
+      while (true) {
+        const [d, e, c] = await getNext()
+        if (e) {
+          onDone()
+          throw e
+        } else if (c) {
+          onDone()
+          return
+        } else {
+          yield d
+        }
+      }
+    })()
+  }
+
   get call_obj(): RpcAccessor {
     function createRpcAccessor(
       addr: string[],
@@ -473,21 +550,106 @@ class RpcChannel implements HandleRegistry {
    * @param val Incoming message
    */
   receive(val: RpcMessage): void {
+    type ItType = AsyncGenerator<SerializableData, void, void>
     const maybeReturn = (
-      data?: SerializableData | Promise<SerializableData>,
+      data?: SerializableData | Promise<SerializableData> | ItType,
       error?: SerializableData
     ): void => {
       if (val.return_addr) {
         const addr = val.return_addr
-        if (error) {
-          this.send(addr, [undefined, error])
-        } else if (data instanceof Promise) {
-          data.then(
-            (newdata) => this.send(addr, [newdata, undefined]),
-            (newerror) => this.send(addr, [undefined, newerror])
-          )
-        } else {
-          this.send(addr, [data, undefined])
+
+        switch (val.return_type) {
+          case 'generator':
+            if (error) {
+              this.send(addr, [undefined, error, true])
+              return
+            }
+
+            let done = false
+            const setDone = (): void => {
+              done = true
+              this.unregister(['_', 'stopgen', ...addr])
+            }
+            const send = (
+              a: MultistringAddress,
+              d: SerializableData,
+              e: Error | undefined,
+              set_done: boolean = false
+            ): void => {
+              if (!done) {
+                this.send(a, [d, e, set_done || Boolean(e)])
+              }
+              if (e || set_done) {
+                setDone()
+              }
+            }
+            const registerStopHandler = (): void => {
+              this.register(['_', 'stopgen', ...addr], setDone)
+            }
+
+            if (data instanceof Promise) {
+              data
+                .then(
+                  (d) => {
+                    send(addr, d, undefined, false)
+                    send(addr, undefined, undefined, true)
+                  },
+                  (e) => send(addr, undefined, e)
+                )
+            } else if ((data as ItType)[Symbol.asyncIterator]) {
+              registerStopHandler()
+              ;(async function() {
+                try {
+                  for await(const d of data as ItType) {
+                    send(addr, d, undefined, false)
+                    if (done) {
+                      return
+                    }
+                  }
+                  send(addr, undefined, undefined, true)
+                } catch (e) {
+                  send(addr, undefined, e)
+                }
+              })()
+            } else {
+              send(addr, data as SerializableData, undefined, false)
+              send(addr, undefined, undefined, true)
+            }
+            return
+          default:
+          case 'promise':
+            if (error) {
+              this.send(addr, [undefined, error])
+              return
+            }
+
+            // eslint-disable-next-line
+            const isGenerator = (data: any): boolean => {
+              return (
+                (data as ItType)[Symbol.asyncIterator] &&
+                typeof (data as ItType).next === 'function'
+              )
+            }
+
+            const sendPromise = (data: Promise<SerializableData>): void => {
+              data.then(
+                (d) => this.send(addr, [d, undefined]),
+                (e) => this.send(addr, [undefined, e])
+              )
+            }
+            if (data instanceof Promise) {
+              sendPromise(data)
+            } else if (isGenerator(data)) {
+              sendPromise(new Promise((res, rej) => {
+                (data as ItType).next().then(
+                  ({ value }) => res(value),
+                  (err) => rej(err)
+                )
+              }))
+            } else {
+              this.send(addr, [data as SerializableData, undefined])
+            }
+            return
         }
       }
     }
