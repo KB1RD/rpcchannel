@@ -86,6 +86,7 @@
 							<ul class="tsd-index-list">
 								<li class="tsd-kind-property tsd-parent-kind-namespace"><a href="_core_.rpcmessage.html#args" class="tsd-kind-icon">args</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-namespace"><a href="_core_.rpcmessage.html#return_addr" class="tsd-kind-icon">return_<wbr>addr</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-namespace"><a href="_core_.rpcmessage.html#return_type" class="tsd-kind-icon">return_<wbr>type</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-namespace"><a href="_core_.rpcmessage.html#to" class="tsd-kind-icon">to</a></li>
 							</ul>
 						</section>
@@ -106,7 +107,7 @@
 					<div class="tsd-signature tsd-kind-icon">args<span class="tsd-signature-symbol">:</span> <a href="_core_.html#serializeddata" class="tsd-signature-type">SerializedData</a><span class="tsd-signature-symbol">[]</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/KB1RD/rpcchannel/blob/34cb47c/src/core.ts#L170">src/core.ts:170</a></li>
+							<li>Defined in <a href="https://github.com/KB1RD/rpcchannel/blob/28aa003/src/core.ts#L229">src/core.ts:229</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -116,7 +117,17 @@
 					<div class="tsd-signature tsd-kind-icon">return_<wbr>addr<span class="tsd-signature-symbol">:</span> <a href="_addrmap_.html#multistringaddress" class="tsd-signature-type">MultistringAddress</a></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/KB1RD/rpcchannel/blob/34cb47c/src/core.ts#L171">src/core.ts:171</a></li>
+							<li>Defined in <a href="https://github.com/KB1RD/rpcchannel/blob/28aa003/src/core.ts#L230">src/core.ts:230</a></li>
+						</ul>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-namespace">
+					<a name="return_type" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagOptional">Optional</span> return_<wbr>type</h3>
+					<div class="tsd-signature tsd-kind-icon">return_<wbr>type<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">"promise"</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">"generator"</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/KB1RD/rpcchannel/blob/28aa003/src/core.ts#L231">src/core.ts:231</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -126,7 +137,7 @@
 					<div class="tsd-signature tsd-kind-icon">to<span class="tsd-signature-symbol">:</span> <a href="_addrmap_.html#multistringaddress" class="tsd-signature-type">MultistringAddress</a></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/KB1RD/rpcchannel/blob/34cb47c/src/core.ts#L169">src/core.ts:169</a></li>
+							<li>Defined in <a href="https://github.com/KB1RD/rpcchannel/blob/28aa003/src/core.ts#L228">src/core.ts:228</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -139,16 +150,26 @@
 					<div class="tsd-signature tsd-kind-icon">Schema<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">object</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/KB1RD/rpcchannel/blob/34cb47c/src/core.ts#L175">src/core.ts:175</a></li>
+							<li>Defined in <a href="https://github.com/KB1RD/rpcchannel/blob/28aa003/src/core.ts#L235">src/core.ts:235</a></li>
 						</ul>
 					</aside>
+					<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal">
+						<a name="schema.required" class="tsd-anchor"></a>
+						<h3>required</h3>
+						<div class="tsd-signature tsd-kind-icon">required<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol"> = [&#x27;to&#x27;, &#x27;args&#x27;]</span></div>
+						<aside class="tsd-sources">
+							<ul>
+								<li>Defined in <a href="https://github.com/KB1RD/rpcchannel/blob/28aa003/src/core.ts#L243">src/core.ts:243</a></li>
+							</ul>
+						</aside>
+					</section>
 					<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal">
 						<a name="schema.type" class="tsd-anchor"></a>
 						<h3>type</h3>
 						<div class="tsd-signature tsd-kind-icon">type<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> = &quot;object&quot;</span></div>
 						<aside class="tsd-sources">
 							<ul>
-								<li>Defined in <a href="https://github.com/KB1RD/rpcchannel/blob/34cb47c/src/core.ts#L176">src/core.ts:176</a></li>
+								<li>Defined in <a href="https://github.com/KB1RD/rpcchannel/blob/28aa003/src/core.ts#L236">src/core.ts:236</a></li>
 							</ul>
 						</aside>
 					</section>
@@ -158,7 +179,7 @@
 						<div class="tsd-signature tsd-kind-icon">properties<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">object</span></div>
 						<aside class="tsd-sources">
 							<ul>
-								<li>Defined in <a href="https://github.com/KB1RD/rpcchannel/blob/34cb47c/src/core.ts#L177">src/core.ts:177</a></li>
+								<li>Defined in <a href="https://github.com/KB1RD/rpcchannel/blob/28aa003/src/core.ts#L237">src/core.ts:237</a></li>
 							</ul>
 						</aside>
 						<section class="tsd-panel tsd-member tsd-kind-object-literal tsd-parent-kind-object-literal">
@@ -167,7 +188,7 @@
 							<div class="tsd-signature tsd-kind-icon">args<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">object</span></div>
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KB1RD/rpcchannel/blob/34cb47c/src/core.ts#L179">src/core.ts:179</a></li>
+									<li>Defined in <a href="https://github.com/KB1RD/rpcchannel/blob/28aa003/src/core.ts#L239">src/core.ts:239</a></li>
 								</ul>
 							</aside>
 							<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal">
@@ -176,7 +197,7 @@
 								<div class="tsd-signature tsd-kind-icon">type<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> = &quot;array&quot;</span></div>
 								<aside class="tsd-sources">
 									<ul>
-										<li>Defined in <a href="https://github.com/KB1RD/rpcchannel/blob/34cb47c/src/core.ts#L179">src/core.ts:179</a></li>
+										<li>Defined in <a href="https://github.com/KB1RD/rpcchannel/blob/28aa003/src/core.ts#L239">src/core.ts:239</a></li>
 									</ul>
 								</aside>
 							</section>
@@ -187,7 +208,7 @@
 							<div class="tsd-signature tsd-kind-icon">return_<wbr>addr<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">object</span></div>
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KB1RD/rpcchannel/blob/34cb47c/src/core.ts#L180">src/core.ts:180</a></li>
+									<li>Defined in <a href="https://github.com/KB1RD/rpcchannel/blob/28aa003/src/core.ts#L240">src/core.ts:240</a></li>
 								</ul>
 							</aside>
 							<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal">
@@ -196,7 +217,7 @@
 								<div class="tsd-signature tsd-kind-icon">type<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> = &quot;array&quot;</span></div>
 								<aside class="tsd-sources">
 									<ul>
-										<li>Defined in <a href="https://github.com/KB1RD/rpcchannel/blob/34cb47c/src/core.ts#L180">src/core.ts:180</a></li>
+										<li>Defined in <a href="https://github.com/KB1RD/rpcchannel/blob/28aa003/src/core.ts#L240">src/core.ts:240</a></li>
 									</ul>
 								</aside>
 							</section>
@@ -206,7 +227,7 @@
 								<div class="tsd-signature tsd-kind-icon">items<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">object</span></div>
 								<aside class="tsd-sources">
 									<ul>
-										<li>Defined in <a href="https://github.com/KB1RD/rpcchannel/blob/34cb47c/src/core.ts#L180">src/core.ts:180</a></li>
+										<li>Defined in <a href="https://github.com/KB1RD/rpcchannel/blob/28aa003/src/core.ts#L240">src/core.ts:240</a></li>
 									</ul>
 								</aside>
 								<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal">
@@ -215,10 +236,40 @@
 									<div class="tsd-signature tsd-kind-icon">type<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> = &quot;string&quot;</span></div>
 									<aside class="tsd-sources">
 										<ul>
-											<li>Defined in <a href="https://github.com/KB1RD/rpcchannel/blob/34cb47c/src/core.ts#L180">src/core.ts:180</a></li>
+											<li>Defined in <a href="https://github.com/KB1RD/rpcchannel/blob/28aa003/src/core.ts#L240">src/core.ts:240</a></li>
 										</ul>
 									</aside>
 								</section>
+							</section>
+						</section>
+						<section class="tsd-panel tsd-member tsd-kind-object-literal tsd-parent-kind-object-literal">
+							<a name="schema.properties.return_type-1" class="tsd-anchor"></a>
+							<h3>return_<wbr>type</h3>
+							<div class="tsd-signature tsd-kind-icon">return_<wbr>type<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">object</span></div>
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/KB1RD/rpcchannel/blob/28aa003/src/core.ts#L241">src/core.ts:241</a></li>
+								</ul>
+							</aside>
+							<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal">
+								<a name="schema.properties.return_type-1.enum" class="tsd-anchor"></a>
+								<h3>enum</h3>
+								<div class="tsd-signature tsd-kind-icon">enum<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol"> = [&#x27;promise&#x27;, &#x27;generator&#x27;]</span></div>
+								<aside class="tsd-sources">
+									<ul>
+										<li>Defined in <a href="https://github.com/KB1RD/rpcchannel/blob/28aa003/src/core.ts#L241">src/core.ts:241</a></li>
+									</ul>
+								</aside>
+							</section>
+							<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal">
+								<a name="schema.properties.return_type-1.type-4" class="tsd-anchor"></a>
+								<h3>type</h3>
+								<div class="tsd-signature tsd-kind-icon">type<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> = &quot;string&quot;</span></div>
+								<aside class="tsd-sources">
+									<ul>
+										<li>Defined in <a href="https://github.com/KB1RD/rpcchannel/blob/28aa003/src/core.ts#L241">src/core.ts:241</a></li>
+									</ul>
+								</aside>
 							</section>
 						</section>
 						<section class="tsd-panel tsd-member tsd-kind-object-literal tsd-parent-kind-object-literal">
@@ -227,16 +278,16 @@
 							<div class="tsd-signature tsd-kind-icon">to<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">object</span></div>
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KB1RD/rpcchannel/blob/34cb47c/src/core.ts#L178">src/core.ts:178</a></li>
+									<li>Defined in <a href="https://github.com/KB1RD/rpcchannel/blob/28aa003/src/core.ts#L238">src/core.ts:238</a></li>
 								</ul>
 							</aside>
 							<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal">
-								<a name="schema.properties.to-1.type-4" class="tsd-anchor"></a>
+								<a name="schema.properties.to-1.type-5" class="tsd-anchor"></a>
 								<h3>type</h3>
 								<div class="tsd-signature tsd-kind-icon">type<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> = &quot;array&quot;</span></div>
 								<aside class="tsd-sources">
 									<ul>
-										<li>Defined in <a href="https://github.com/KB1RD/rpcchannel/blob/34cb47c/src/core.ts#L178">src/core.ts:178</a></li>
+										<li>Defined in <a href="https://github.com/KB1RD/rpcchannel/blob/28aa003/src/core.ts#L238">src/core.ts:238</a></li>
 									</ul>
 								</aside>
 							</section>
@@ -246,16 +297,16 @@
 								<div class="tsd-signature tsd-kind-icon">items<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">object</span></div>
 								<aside class="tsd-sources">
 									<ul>
-										<li>Defined in <a href="https://github.com/KB1RD/rpcchannel/blob/34cb47c/src/core.ts#L178">src/core.ts:178</a></li>
+										<li>Defined in <a href="https://github.com/KB1RD/rpcchannel/blob/28aa003/src/core.ts#L238">src/core.ts:238</a></li>
 									</ul>
 								</aside>
 								<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal">
-									<a name="schema.properties.to-1.items-1.type-5" class="tsd-anchor"></a>
+									<a name="schema.properties.to-1.items-1.type-6" class="tsd-anchor"></a>
 									<h3>type</h3>
 									<div class="tsd-signature tsd-kind-icon">type<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> = &quot;string&quot;</span></div>
 									<aside class="tsd-sources">
 										<ul>
-											<li>Defined in <a href="https://github.com/KB1RD/rpcchannel/blob/34cb47c/src/core.ts#L178">src/core.ts:178</a></li>
+											<li>Defined in <a href="https://github.com/KB1RD/rpcchannel/blob/28aa003/src/core.ts#L238">src/core.ts:238</a></li>
 										</ul>
 									</aside>
 								</section>
@@ -280,6 +331,9 @@
 					</li>
 					<li class=" tsd-kind-property tsd-parent-kind-namespace">
 						<a href="_core_.rpcmessage.html#return_addr" class="tsd-kind-icon">return_<wbr>addr</a>
+					</li>
+					<li class=" tsd-kind-property tsd-parent-kind-namespace">
+						<a href="_core_.rpcmessage.html#return_type" class="tsd-kind-icon">return_<wbr>type</a>
 					</li>
 					<li class=" tsd-kind-property tsd-parent-kind-namespace">
 						<a href="_core_.rpcmessage.html#to" class="tsd-kind-icon">to</a>
