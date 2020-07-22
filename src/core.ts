@@ -589,7 +589,7 @@ class RpcChannel implements HandleRegistry {
       // eslint-disable-next-line
       const isGenerator = (data: any): boolean => {
         return (
-          data && 
+          data &&
           (data as ItType)[Symbol.asyncIterator] &&
           typeof (data as ItType).next === 'function'
         )
