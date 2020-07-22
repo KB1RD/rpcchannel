@@ -362,7 +362,8 @@ describe('[core.ts] RpcChannel', () => {
       expect(sent_msgs[0][0]).to.be.deep.equal({
         to: ['net', 'kb1rd', 'hello'],
         args: [123, 'abc', 'hi'],
-        return_addr: undefined
+        return_addr: undefined,
+        return_type: 'promise'
       })
       expect(sent_msgs[0][1].length).to.be.equal(0)
     })
@@ -376,7 +377,8 @@ describe('[core.ts] RpcChannel', () => {
       expect(sent_msgs[0][0]).to.be.deep.equal({
         to: ['net', 'kb1rd', 'hello'],
         args: [],
-        return_addr: ['net', 'kb1rd', 'callreturn']
+        return_addr: ['net', 'kb1rd', 'callreturn'],
+        return_type: 'promise'
       })
       expect(sent_msgs[0][1].length).to.be.equal(0)
     })
@@ -391,7 +393,8 @@ describe('[core.ts] RpcChannel', () => {
       expect(sent_msgs[0][0]).to.be.deep.equal({
         to: ['net', 'kb1rd', 'hello'],
         args: [123, 'abc', 'hi'],
-        return_addr: sent_msgs[0][0].return_addr
+        return_addr: sent_msgs[0][0].return_addr,
+        return_type: 'promise'
       })
       expect(sent_msgs[0][1].length).to.be.equal(0)
     })
@@ -408,13 +411,15 @@ describe('[core.ts] RpcChannel', () => {
       expect(sent_msgs[0][0]).to.be.deep.equal({
         to: ['net', 'kb1rd', 'hello'],
         args: [123, 'abc', 'hi'],
-        return_addr: ['_', 'ret', 'id0']
+        return_addr: ['_', 'ret', 'id0'],
+        return_type: 'promise'
       })
       expect(sent_msgs[0][1].length).to.be.equal(0)
       expect(sent_msgs[1][0]).to.be.deep.equal({
         to: ['net', 'kb1rd', 'hello'],
         args: [123, 'abc', 'hi'],
-        return_addr: ['_', 'ret', 'id1']
+        return_addr: ['_', 'ret', 'id1'],
+        return_type: 'promise'
       })
       expect(sent_msgs[1][1].length).to.be.equal(0)
     })
@@ -431,7 +436,8 @@ describe('[core.ts] RpcChannel', () => {
       expect(sent_msgs[0][0]).to.be.deep.equal({
         to: ['net', 'kb1rd', 'hello'],
         args: [],
-        return_addr: sent_msgs[0][0].return_addr
+        return_addr: sent_msgs[0][0].return_addr,
+        return_type: 'promise'
       })
       expect(sent_msgs[0][1].length).to.be.equal(0)
       expect(
@@ -521,7 +527,8 @@ describe('[core.ts] RpcChannel', () => {
       expect(sent_msgs[0][0]).to.be.deep.equal({
         to: ['net', 'kb1rd', 'hello'],
         args: [123, 'abc', 'hi'],
-        return_addr: sent_msgs[0][0].return_addr
+        return_addr: sent_msgs[0][0].return_addr,
+        return_type: 'generator'
       })
       expect(sent_msgs[0][1].length).to.be.equal(0)
     })
@@ -538,13 +545,15 @@ describe('[core.ts] RpcChannel', () => {
       expect(sent_msgs[0][0]).to.be.deep.equal({
         to: ['net', 'kb1rd', 'hello'],
         args: [123, 'abc', 'hi'],
-        return_addr: ['_', 'ret', 'id0']
+        return_addr: ['_', 'ret', 'id0'],
+        return_type: 'generator'
       })
       expect(sent_msgs[0][1].length).to.be.equal(0)
       expect(sent_msgs[1][0]).to.be.deep.equal({
         to: ['net', 'kb1rd', 'hello'],
         args: [123, 'abc', 'hi'],
-        return_addr: ['_', 'ret', 'id1']
+        return_addr: ['_', 'ret', 'id1'],
+        return_type: 'generator'
       })
       expect(sent_msgs[1][1].length).to.be.equal(0)
     })
@@ -555,7 +564,8 @@ describe('[core.ts] RpcChannel', () => {
       expect(sent_msgs[0][0]).to.be.deep.equal({
         to: ['net', 'kb1rd', 'hello'],
         args: [],
-        return_addr: sent_msgs[0][0].return_addr
+        return_addr: sent_msgs[0][0].return_addr,
+        return_type: 'generator'
       })
       expect(sent_msgs[0][1].length).to.be.equal(0)
       expect(
@@ -679,7 +689,8 @@ describe('[core.ts] RpcChannel', () => {
       expect(sent_msgs[0][0]).to.be.deep.equal({
         to: ['net', 'kb1rd', 'hello'],
         args: [123, 'abc', 'hi'],
-        return_addr: sent_msgs[0][0].return_addr
+        return_addr: sent_msgs[0][0].return_addr,
+        return_type: 'promise'
       })
       expect(sent_msgs[0][1].length).to.be.equal(0)
     })
@@ -745,7 +756,8 @@ describe('[core.ts] RpcChannel', () => {
         expect(sent_msgs[0][0]).to.be.deep.equal({
           to: ['return'],
           args: ['hello123', undefined],
-          return_addr: undefined
+          return_addr: undefined,
+          return_type: 'promise'
         })
         expect(sent_msgs[0][1].length).to.be.equal(0)
       })
@@ -772,7 +784,8 @@ describe('[core.ts] RpcChannel', () => {
               stack: 'Stack trace redacted for security reasons'
             }
           ],
-          return_addr: undefined
+          return_addr: undefined,
+          return_type: 'promise'
         })
         expect(sent_msgs[0][1].length).to.be.equal(0)
       })
@@ -793,7 +806,8 @@ describe('[core.ts] RpcChannel', () => {
         expect(sent_msgs[0][0]).to.be.deep.equal({
           to: ['return'],
           args: ['hello123', undefined],
-          return_addr: undefined
+          return_addr: undefined,
+          return_type: 'promise'
         })
         expect(sent_msgs[0][1].length).to.be.equal(0)
       })
@@ -815,7 +829,8 @@ describe('[core.ts] RpcChannel', () => {
         expect(sent_msgs[0][0]).to.be.deep.equal({
           to: ['return'],
           args: ['hello123', undefined],
-          return_addr: undefined
+          return_addr: undefined,
+          return_type: 'promise'
         })
         expect(sent_msgs[0][1].length).to.be.equal(0)
       })
@@ -835,7 +850,8 @@ describe('[core.ts] RpcChannel', () => {
         expect(sent_msgs[0][0]).to.be.deep.equal({
           to: ['return'],
           args: [undefined, 'error'],
-          return_addr: undefined
+          return_addr: undefined,
+          return_type: 'promise'
         })
         expect(sent_msgs[0][1].length).to.be.equal(0)
       })
@@ -867,7 +883,8 @@ describe('[core.ts] RpcChannel', () => {
               stack: 'Stack trace redacted for security reasons'
             }
           ],
-          return_addr: undefined
+          return_addr: undefined,
+          return_type: 'promise'
         })
         expect(sent_msgs[0][1].length).to.be.equal(0)
       })
@@ -891,7 +908,8 @@ describe('[core.ts] RpcChannel', () => {
               stack: 'Stack trace redacted for security reasons'
             }
           ],
-          return_addr: undefined
+          return_addr: undefined,
+          return_type: 'promise'
         })
         expect(sent_msgs[0][1].length).to.be.equal(0)
       })
@@ -916,7 +934,8 @@ describe('[core.ts] RpcChannel', () => {
               stack: 'Stack trace redacted for security reasons'
             }
           ],
-          return_addr: undefined
+          return_addr: undefined,
+          return_type: 'promise'
         })
         expect(sent_msgs[0][1].length).to.be.equal(0)
       })
@@ -947,7 +966,8 @@ describe('[core.ts] RpcChannel', () => {
             },
             true
           ],
-          return_addr: undefined
+          return_addr: undefined,
+          return_type: 'promise'
         })
         expect(sent_msgs[0][1].length).to.be.equal(0)
       })
@@ -966,13 +986,15 @@ describe('[core.ts] RpcChannel', () => {
         expect(sent_msgs[0][0]).to.be.deep.equal({
           to: ['return'],
           args: ['hello123', undefined, false],
-          return_addr: undefined
+          return_addr: undefined,
+          return_type: 'promise'
         })
         expect(sent_msgs[0][1].length).to.be.equal(0)
         expect(sent_msgs[1][0]).to.be.deep.equal({
           to: ['return'],
           args: [undefined, undefined, true],
-          return_addr: undefined
+          return_addr: undefined,
+          return_type: 'promise'
         })
         expect(sent_msgs[1][1].length).to.be.equal(0)
       })
@@ -994,13 +1016,15 @@ describe('[core.ts] RpcChannel', () => {
         expect(sent_msgs[0][0]).to.be.deep.equal({
           to: ['return'],
           args: ['hello123', undefined, false],
-          return_addr: undefined
+          return_addr: undefined,
+          return_type: 'promise'
         })
         expect(sent_msgs[0][1].length).to.be.equal(0)
         expect(sent_msgs[1][0]).to.be.deep.equal({
           to: ['return'],
           args: [undefined, undefined, true],
-          return_addr: undefined
+          return_addr: undefined,
+          return_type: 'promise'
         })
         expect(sent_msgs[1][1].length).to.be.equal(0)
       })
@@ -1035,7 +1059,8 @@ describe('[core.ts] RpcChannel', () => {
             },
             true
           ],
-          return_addr: undefined
+          return_addr: undefined,
+          return_type: 'promise'
         })
         expect(sent_msgs[0][1].length).to.be.equal(0)
       })
@@ -1060,7 +1085,8 @@ describe('[core.ts] RpcChannel', () => {
             undefined,
             false
           ],
-          return_addr: undefined
+          return_addr: undefined,
+          return_type: 'promise'
         })
         expect(sent_msgs[0][1].length).to.be.equal(0)
         expect(sent_msgs[1][0]).to.be.deep.equal({
@@ -1070,7 +1096,8 @@ describe('[core.ts] RpcChannel', () => {
             undefined,
             false
           ],
-          return_addr: undefined
+          return_addr: undefined,
+          return_type: 'promise'
         })
         expect(sent_msgs[1][1].length).to.be.equal(0)
         expect(sent_msgs[2][0]).to.be.deep.equal({
@@ -1080,7 +1107,8 @@ describe('[core.ts] RpcChannel', () => {
             undefined,
             false
           ],
-          return_addr: undefined
+          return_addr: undefined,
+          return_type: 'promise'
         })
         expect(sent_msgs[2][1].length).to.be.equal(0)
         expect(sent_msgs[3][0]).to.be.deep.equal({
@@ -1090,7 +1118,8 @@ describe('[core.ts] RpcChannel', () => {
             undefined,
             true
           ],
-          return_addr: undefined
+          return_addr: undefined,
+          return_type: 'promise'
         })
         expect(sent_msgs[3][1].length).to.be.equal(0)
       })
@@ -1123,7 +1152,8 @@ describe('[core.ts] RpcChannel', () => {
             undefined,
             false
           ],
-          return_addr: undefined
+          return_addr: undefined,
+          return_type: 'promise'
         })
         expect(sent_msgs[0][1].length).to.be.equal(0)
       })
@@ -1148,7 +1178,8 @@ describe('[core.ts] RpcChannel', () => {
             undefined,
             false
           ],
-          return_addr: undefined
+          return_addr: undefined,
+          return_type: 'promise'
         })
         expect(sent_msgs[0][1].length).to.be.equal(0)
         expect(sent_msgs[1][0]).to.be.deep.equal({
@@ -1158,7 +1189,8 @@ describe('[core.ts] RpcChannel', () => {
             'b',
             true
           ],
-          return_addr: undefined
+          return_addr: undefined,
+          return_type: 'promise'
         })
         expect(sent_msgs[1][1].length).to.be.equal(0)
       })
@@ -1181,7 +1213,8 @@ describe('[core.ts] RpcChannel', () => {
             undefined,
             false
           ],
-          return_addr: undefined
+          return_addr: undefined,
+          return_type: 'promise'
         })
         expect(sent_msgs[0][1].length).to.be.equal(0)
         expect(sent_msgs[1][0]).to.be.deep.equal({
@@ -1191,7 +1224,8 @@ describe('[core.ts] RpcChannel', () => {
             undefined,
             true
           ],
-          return_addr: undefined
+          return_addr: undefined,
+          return_type: 'promise'
         })
         expect(sent_msgs[1][1].length).to.be.equal(0)
         expect(c.reg.map.get(['_', 'stopgen', 'return'])).to.be.undefined

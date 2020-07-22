@@ -409,13 +409,15 @@ class RpcChannel implements HandleRegistry {
   send(
     to: MultistringAddress,
     args: SerializableData[] = [],
-    return_addr?: MultistringAddress
+    return_addr?: MultistringAddress,
+    return_type: 'promise' | 'generator' = 'promise'
   ): void {
     const xfer: Transferable[] = []
     const msg = {
       to,
       args: args.map((d) => rpcSerialize(d, xfer)),
-      return_addr
+      return_addr,
+      return_type
     }
     this.c_send(msg, xfer)
   }
@@ -468,7 +470,7 @@ class RpcChannel implements HandleRegistry {
   ): AsyncGenerator<SerializedData, void, void> {
     const return_addr = this.reg.nextSeqAddr()
 
-    this.send(to, args, return_addr)
+    this.send(to, args, return_addr, 'generator')
 
     // Now, create the generator. If this wasn't done, the above code would
     // only be run when `next` was called
