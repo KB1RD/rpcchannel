@@ -12,7 +12,7 @@ import { isDefined } from './utils'
 
 const toRpcSerialized = Symbol('ChannelRpcSerialize')
 
-type Primitive = undefined | void | boolean | number | string | BigInt
+type Primitive = undefined | null | void | boolean | number | string | BigInt
 
 type SerializableArray = SerializableData[]
 type SerializationFuncObject = { [toRpcSerialized]: SerializationFunction }
@@ -95,6 +95,10 @@ function rpcSerialize(
     case 'function':
       throw new TypeError('Functions cannot be serialized')
     case 'object':
+      // Null is an object... I guess
+      if (data === null) {
+        return null
+      }
       if (
         transferrables.some(
           (type) => data instanceof ((type as unknown) as () => void)

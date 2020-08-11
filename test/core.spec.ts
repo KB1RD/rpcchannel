@@ -46,6 +46,7 @@ describe('[core.ts] rpcSerialize', () => {
     const xfer: Transferable[] = []
     const bi = BigInt(9007199254740991)
     expect(rpcSerialize(undefined, xfer)).to.be.equal(undefined)
+    expect(rpcSerialize(null, xfer)).to.be.equal(null)
     expect(rpcSerialize(bi, xfer)).to.be.equal(bi)
     expect(rpcSerialize(true, xfer)).to.be.equal(true)
     expect(rpcSerialize(1, xfer)).to.be.equal(1)
