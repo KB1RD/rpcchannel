@@ -440,12 +440,12 @@ describe('[core.ts] RpcChannel', () => {
         return_type: 'promise'
       })
       expect(sent_msgs[0][1].length).to.be.equal(0)
-      expect(
-        typeof c.reg.map.get(sent_msgs[0][0].return_addr as MultistringAddress)
-      ).to.be.equal('function')
+      expect(typeof c._i_reg.map.get(
+        sent_msgs[0][0].return_addr as MultistringAddress
+      )).to.be.equal('function')
 
       expect(then_done).to.be.false
-      ;(c.reg.map.get(
+      ;(c._i_reg.map.get(
         sent_msgs[0][0].return_addr as MultistringAddress
       ) as RpcFunction)(c, [])
       await promise
@@ -455,7 +455,7 @@ describe('[core.ts] RpcChannel', () => {
     it('resolves promise with return values', async () => {
       const promise = c.call(['net', 'kb1rd', 'hello'], [])
 
-      ;(c.reg.map.get(
+      ;(c._i_reg.map.get(
         sent_msgs[0][0].return_addr as MultistringAddress
       ) as RpcFunction)(c, [], 'hello', undefined)
       const data = await promise
@@ -464,7 +464,7 @@ describe('[core.ts] RpcChannel', () => {
     it('rejects promise with second error argument', async () => {
       const promise = c.call(['net', 'kb1rd', 'hello'], [])
 
-      ;(c.reg.map.get(
+      ;(c._i_reg.map.get(
         sent_msgs[0][0].return_addr as MultistringAddress
       ) as RpcFunction)(c, [], undefined, 'ERROR!')
       let error: any
@@ -478,7 +478,7 @@ describe('[core.ts] RpcChannel', () => {
     it('rejects promise if callback called with other channel', async () => {
       const promise = c.call(['net', 'kb1rd', 'hello'], [])
 
-      ;(c.reg.map.get(
+      ;(c._i_reg.map.get(
         sent_msgs[0][0].return_addr as MultistringAddress
       ) as RpcFunction)(new RpcChannel(() => undefined), [])
       let error: any
@@ -492,7 +492,7 @@ describe('[core.ts] RpcChannel', () => {
     it('rejects promise with ForwardedError if error passed', async () => {
       const promise = c.call(['net', 'kb1rd', 'hello'], [])
 
-      ;(c.reg.map.get(
+      ;(c._i_reg.map.get(
         sent_msgs[0][0].return_addr as MultistringAddress
       ) as RpcFunction)(c, [], undefined, { name: 'ERROR!' })
       let error: any
@@ -568,18 +568,18 @@ describe('[core.ts] RpcChannel', () => {
         return_type: 'generator'
       })
       expect(sent_msgs[0][1].length).to.be.equal(0)
-      expect(
-        typeof c.reg.map.get(sent_msgs[0][0].return_addr as MultistringAddress)
-      ).to.be.equal('function')
+      expect(typeof c._i_reg.map.get(
+        sent_msgs[0][0].return_addr as MultistringAddress
+      )).to.be.equal('function')
 
       let val = gen.next()
-      ;(c.reg.map.get(
+      ;(c._i_reg.map.get(
         sent_msgs[0][0].return_addr as MultistringAddress
       ) as RpcFunction)(c, [])
       await val
 
       val = gen.next()
-      ;(c.reg.map.get(
+      ;(c._i_reg.map.get(
         sent_msgs[0][0].return_addr as MultistringAddress
       ) as RpcFunction)(c, [])
       await val
@@ -587,7 +587,7 @@ describe('[core.ts] RpcChannel', () => {
     it('resolves promise with return values', async () => {
       const gen = c.generate(['net', 'kb1rd', 'hello'], [])
 
-      ;(c.reg.map.get(
+      ;(c._i_reg.map.get(
         sent_msgs[0][0].return_addr as MultistringAddress
       ) as RpcFunction)(c, [], 'hello', undefined)
       const data = await gen.next()
@@ -597,7 +597,7 @@ describe('[core.ts] RpcChannel', () => {
     it('finishes if done signal sent', async () => {
       const gen = c.generate(['net', 'kb1rd', 'hello'], [])
 
-      ;(c.reg.map.get(
+      ;(c._i_reg.map.get(
         sent_msgs[0][0].return_addr as MultistringAddress
       ) as RpcFunction)(c, [], undefined, undefined, true)
       const data = await gen.next()
@@ -610,9 +610,7 @@ describe('[core.ts] RpcChannel', () => {
       expect(sent_msgs.length).to.be.equal(2)
       const raddr = sent_msgs[0][0].return_addr as MultistringAddress
       expect(sent_msgs[1][0].to).to.be.deep.equal(['_', 'stopgen', ...raddr])
-      expect(c.reg.map.get(
-        sent_msgs[0][0].return_addr as MultistringAddress
-      )).to.be.undefined
+      expect(c._i_reg.map.get(raddr)).to.be.undefined
     })
     it('stops generator if `throw` called', () => {
       const gen = c.generate(['net', 'kb1rd', 'hello'], [])
@@ -621,26 +619,24 @@ describe('[core.ts] RpcChannel', () => {
       expect(sent_msgs.length).to.be.equal(2)
       const raddr = sent_msgs[0][0].return_addr as MultistringAddress
       expect(sent_msgs[1][0].to).to.be.deep.equal(['_', 'stopgen', ...raddr])
-      expect(c.reg.map.get(
-        sent_msgs[0][0].return_addr as MultistringAddress
-      )).to.be.undefined
+      expect(c._i_reg.map.get(raddr)).to.be.undefined
     })
     it('unregisters on completion', async () => {
       const gen = c.generate(['net', 'kb1rd', 'hello'], [])
 
-      ;(c.reg.map.get(
+      ;(c._i_reg.map.get(
         sent_msgs[0][0].return_addr as MultistringAddress
       ) as RpcFunction)(c, [], undefined, undefined, true)
       const data = await gen.next()
       expect(data.done).to.be.equal(true)
       expect(
-        c.reg.map.get(sent_msgs[0][0].return_addr as MultistringAddress)
+        c._i_reg.map.get(sent_msgs[0][0].return_addr as MultistringAddress)
       ).to.be.undefined
     })
     it('rejects promise and finishes with second error argument', async () => {
       const gen = c.generate(['net', 'kb1rd', 'hello'], [])
 
-      ;(c.reg.map.get(
+      ;(c._i_reg.map.get(
         sent_msgs[0][0].return_addr as MultistringAddress
       ) as RpcFunction)(c, [], undefined, 'ERROR!')
       let error: any
@@ -655,7 +651,7 @@ describe('[core.ts] RpcChannel', () => {
     it('rejects promise if callback called with other channel', async () => {
       const gen = c.generate(['net', 'kb1rd', 'hello'], [])
 
-      ;(c.reg.map.get(
+      ;(c._i_reg.map.get(
         sent_msgs[0][0].return_addr as MultistringAddress
       ) as RpcFunction)(new RpcChannel(() => undefined), [])
       let error: any
@@ -669,7 +665,7 @@ describe('[core.ts] RpcChannel', () => {
     it('rejects promise with ForwardedError if error passed', async () => {
       const gen = c.generate(['net', 'kb1rd', 'hello'], [])
 
-      ;(c.reg.map.get(
+      ;(c._i_reg.map.get(
         sent_msgs[0][0].return_addr as MultistringAddress
       ) as RpcFunction)(c, [], undefined, { name: 'ERROR!' })
       let error: any
@@ -697,7 +693,7 @@ describe('[core.ts] RpcChannel', () => {
     it('resolves promise with return values', async () => {
       const promise = c.call_obj.net.kb1rd.hello()
 
-      ;(c.reg.map.get(
+      ;(c._i_reg.map.get(
         sent_msgs[0][0].return_addr as MultistringAddress
       ) as RpcFunction)(c, [], 'hello', undefined)
       const data = await promise

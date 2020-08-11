@@ -364,6 +364,7 @@ class ForwardedError extends Error {}
  */
 class RpcChannel implements HandleRegistry {
   readonly access: AddressMap<AccessPolicy> = new AddressMap()
+  readonly _i_reg: RpcHandlerRegistry = new RpcHandlerRegistry()
   /**
    * @param c_send The function to send over whatever transport is used.
    * @param reg The handle registry. This can be changed later.
@@ -432,9 +433,9 @@ class RpcChannel implements HandleRegistry {
     to: MultistringAddress,
     args: SerializableData[] = []
   ): Promise<SerializedData> {
-    const return_addr = this.reg.nextSeqAddr()
+    const return_addr = this._i_reg.nextSeqAddr()
     return new Promise((resolve, reject) => {
-      this.register(return_addr, (channel, wc, data, error) => {
+      this._i_reg.register(return_addr, (channel, wc, data, error) => {
         if (channel !== this) {
           reject(
             new InvalidChannelError(
@@ -468,7 +469,7 @@ class RpcChannel implements HandleRegistry {
     to: MultistringAddress,
     args: SerializableData[] = []
   ): AsyncGenerator<SerializedData, void, void> {
-    const return_addr = this.reg.nextSeqAddr()
+    const return_addr = this._i_reg.nextSeqAddr()
 
     this.send(to, args, return_addr, 'generator')
 
@@ -477,10 +478,8 @@ class RpcChannel implements HandleRegistry {
     const buffer: [SerializedData, SerializedData | Error, boolean][] = []
     let onNewData: (() => void) | undefined
 
-    const onDone = () => {
-      this.unregister(return_addr)
-    }
-    this.register(return_addr, (channel, wc, data, error, done) => {
+    const onDone = () => this._i_reg.unregister(return_addr)
+    this._i_reg.register(return_addr, (channel, wc, data, error, done) => {
       if (channel !== this) {
         onDone()
         buffer.push([
@@ -625,7 +624,7 @@ class RpcChannel implements HandleRegistry {
               }
             }
             const registerStopHandler = (): void => {
-              this.register(['_', 'stopgen', ...addr], setDone)
+              this._i_reg.register(['_', 'stopgen', ...addr], setDone)
             }
 
             if (data instanceof Promise) {
@@ -698,7 +697,7 @@ class RpcChannel implements HandleRegistry {
     }
 
     const wc: string[] = []
-    const func = this.reg.map.get(val.to, wc)
+    const func = this._i_reg.map.get(val.to, wc) || this.reg.map.get(val.to, wc)
     let data: RpcResult
     try {
       if (!func) {
