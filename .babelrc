@@ -1,7 +1,7 @@
 {
   "presets": [
-    "@babel/preset-typescript",
-    ["@babel/env", { "useBuiltIns": "entry", "corejs": 3 }]
+    ["@babel/env", { "useBuiltIns": "entry", "corejs": 3 }],
+    "@babel/typescript"
   ],
   "plugins": [
     [
@@ -9,7 +9,8 @@
       { "allowNamespaces": true, "allowDeclareFields": true }
     ],
     ["@babel/plugin-proposal-decorators", { "legacy": true }],
-    "@babel/plugin-proposal-class-properties",
+    "@babel/proposal-class-properties",
+    "@babel/proposal-object-rest-spread",
     "@babel/plugin-transform-runtime"
   ],
   "env": {
