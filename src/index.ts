@@ -3,28 +3,8 @@
  */
 /** */
 
-export {
-  RpcHandlerRegistry,
-  RpcChannel,
-  RpcMessage,
-  rpcSerialize,
-  toRpcSerialized,
-  AccessPolicy,
-  RpcFunction,
-  RpcRemappedFunction,
-  RpcAddress,
-  RemapArguments,
-  RpcFunctionAddress,
-  InvalidChannelError,
-  AccessDeniedError,
-  ForwardedError,
-  SerializableData,
-  SerializedData,
-  BaseRegisteredObject
-} from './core'
-export { EnforceArgumentSchema, EnforceMethodArgSchema } from './schema'
-export {
-  MultistringAddress,
-  WildcardMultistringAddress,
-  AddressMap
-} from './addrmap'
+export * from './registry'
+export * from './accesscontrol'
+export * from './serializer'
+export * from './schema'
+export * from './addrmap'

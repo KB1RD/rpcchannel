@@ -8,133 +8,12 @@ import {
   WildcardMultistringAddress,
   AddressMap
 } from './addrmap'
+import { ChainedAccessController, AccessPolicy } from './accesscontrol'
+import { rpcSerialize, SerializableData, SerializedData } from './serializer'
 import { isDefined } from './utils'
 
-const toRpcSerialized = Symbol('ChannelRpcSerialize')
-
-type Primitive = undefined | null | void | boolean | number | string | BigInt
-
-type SerializableArray = SerializableData[]
-type SerializationFuncObject = { [toRpcSerialized]: SerializationFunction }
-type SerializableObject =
-  | { [key: string]: SerializableData }
-  | SerializationFuncObject
-type SerializableData =
-  | Primitive
-  | SerializableArray
-  | SerializableObject
-  | Transferable
-  | Error
-
-type SerializedArray = SerializedData[]
-type SerializedObject = { [key: string]: SerializedData }
-type SerializedData =
-  | Primitive
-  | SerializedArray
-  | SerializedObject
-  | Transferable
-
-type SerializationFunction = (
-  data: SerializableData,
-  xfer: Transferable[]
-) => SerializedData
-
-/**
- * Javascript will throw errors if I do a simple defined check, so all of this
- * crap is to ensure that doesn't happen. It would be nice to put this in a
- * function, but then JS would throw the error. So, all of this typed out crap
- * is actually necessary.
- */
-const transferrables = [
-  typeof MessagePort !== 'undefined' && MessagePort,
-  typeof ImageBitmap !== 'undefined' && ImageBitmap,
-  typeof OffscreenCanvas !== 'undefined' && OffscreenCanvas,
-
-  typeof ArrayBuffer !== 'undefined' && ArrayBuffer,
-
-  typeof Int8Array !== 'undefined' && Int8Array,
-  typeof Int16Array !== 'undefined' && Int16Array,
-  typeof Int32Array !== 'undefined' && Int32Array,
-  typeof BigInt64Array !== 'undefined' && BigInt64Array,
-
-  typeof Uint8Array !== 'undefined' && Uint8Array,
-  typeof Uint8ClampedArray !== 'undefined' && Uint8ClampedArray,
-  typeof Uint16Array !== 'undefined' && Uint16Array,
-  typeof Uint32Array !== 'undefined' && Uint32Array,
-  typeof BigUint64Array !== 'undefined' && BigUint64Array,
-
-  typeof Float32Array !== 'undefined' && Float32Array,
-  typeof Float64Array !== 'undefined' && Float64Array
-].filter((d) => d)
-
-/**
- * Prepares `data` to be sent over a MessagePort by ensuring that all data is
- * of a type that can be sent and that all transferrables are `push`ed to
- * `xfer`.
- * @todo Make error stack sending configurable
- * @param data Data to serialize
- * @param xfer Destination array for transferrables
- * @returns The data in serialized format
- */
-function rpcSerialize(
-  data: SerializableData,
-  xfer: Transferable[]
-): SerializedData {
-  if (data && (data as SerializationFuncObject)[toRpcSerialized]) {
-    return (data as SerializationFuncObject)[toRpcSerialized](data, xfer)
-  }
-  switch (typeof data) {
-    case 'undefined':
-    case 'bigint':
-    case 'boolean':
-    case 'number':
-    case 'string':
-      return data
-    case 'symbol':
-      throw new TypeError('Symbols cannot be serialized')
-    case 'function':
-      throw new TypeError('Functions cannot be serialized')
-    case 'object':
-      // Null is an object... I guess
-      if (data === null) {
-        return null
-      }
-      if (
-        transferrables.some(
-          (type) => data instanceof ((type as unknown) as () => void)
-        )
-      ) {
-        xfer.push(data as Transferable)
-        return data as SerializedData
-      }
-      if (data instanceof Error) {
-        return {
-          name: data.name,
-          message: data.message,
-          stack: 'Stack trace redacted for security reasons',
-          // These don't exist in the TS definitions, but they may exist in
-          // other runtime environments
-          columnNumber: ((data as unknown) as { columnNumber: number })
-            .columnNumber,
-          lineNumber: ((data as unknown) as { lineNumber: number }).lineNumber,
-          fileName: ((data as unknown) as { fileName: number }).fileName
-        }
-      }
-      if (Array.isArray(data)) {
-        return data.map((e) => rpcSerialize(e, xfer))
-      }
-      const robj: SerializedObject = {}
-      Object.keys(data as SerializedObject).forEach((k) => {
-        robj[k] = rpcSerialize((data as SerializedObject)[k], xfer)
-      })
-      return robj
-    default:
-      throw new TypeError(`Cannot serialize unknown type ${typeof data}`)
-  }
-}
-
-const RpcFunctionAddress = Symbol('RpcFunctionAddress')
-const RpcRemappedFunction = Symbol('RpcRemappedFunction')
+export const RpcFunctionAddress = Symbol('RpcFunctionAddress')
+export const RpcRemappedFunction = Symbol('RpcRemappedFunction')
 
 interface WithValidAddressKey {
   [RpcFunctionAddress]?: WildcardMultistringAddress
@@ -150,12 +29,12 @@ type RpcResult =
  * @param src The source `RpcChannel`
  * @param wildcards Any wildcards that were used in resolution of this function
  */
-interface RpcFunction extends WithValidAddressKey {
+export interface RpcFunction extends WithValidAddressKey {
   (src: RpcChannel, wildcards: string[], ...args: SerializedData[]): RpcResult
   [RpcRemappedFunction]?: RpcFunction
 }
 
-function RpcAddress(address: WildcardMultistringAddress) {
+export function RpcAddress(address: WildcardMultistringAddress) {
   return function (
     // eslint-disable-next-line
     target: any,
@@ -170,7 +49,7 @@ function RpcAddress(address: WildcardMultistringAddress) {
   }
 }
 
-function RemapArguments(
+export function RemapArguments(
   mapping: ('pass' | 'drop' | 'expand')[],
   key: string | symbol | number = RpcRemappedFunction
 ) {
@@ -230,14 +109,14 @@ function RemapArguments(
  * Sent between threads/workers/tabs/domains/whatever to carry RPCs and
  * associated data.
  */
-interface RpcMessage {
+export interface RpcMessage {
   to: MultistringAddress
   args: SerializedData[]
   return_addr?: MultistringAddress
   return_type?: 'promise' | 'generator'
 }
 
-namespace RpcMessage {
+export namespace RpcMessage {
   export const Schema = {
     type: 'object',
     properties: {
@@ -250,7 +129,7 @@ namespace RpcMessage {
   }
 }
 
-type BaseRegisteredObject = { [key: string]: WithValidAddressKey }
+export type BaseRegisteredObject = { [key: string]: WithValidAddressKey }
 
 /**
  * Anything where RPC functions can be registered and unregistered.
@@ -284,7 +163,7 @@ interface HandleRegistry {
  * Where RPC handles are registered to a particular address. This can be
  * re-used between different `RpcChannel`s.
  */
-class RpcHandlerRegistry implements HandleRegistry {
+export class RpcHandlerRegistry implements HandleRegistry {
   map: AddressMap<RpcFunction> = new AddressMap()
   return_seq_id = 0
 
@@ -337,13 +216,7 @@ class RpcHandlerRegistry implements HandleRegistry {
   }
 }
 
-type AccessPolicy = boolean
-const AccessPolicy = {
-  ALLOW: true,
-  DENY: false
-}
-
-interface RpcAccessor {
+export interface RpcAccessor {
   (...args: SerializableData[]): Promise<SerializedData>
   [key: string]: RpcAccessor
 }
@@ -353,21 +226,22 @@ interface RpcAccessor {
  * than it was sent from. This **may** indicate a security issue due to re-used
  * recieve callbacks.
  */
-class InvalidChannelError extends Error {
+export class InvalidChannelError extends Error {
   readonly name = 'InvalidChannelError'
 }
 
-class AccessDeniedError extends Error {
+export class AccessDeniedError extends Error {
   readonly name = 'AccessDeniedError'
 }
 
-class ForwardedError extends Error {}
+export class ForwardedError extends Error {}
 
 /**
  * A wrapper class for functions to perform remote procedure calls.
  */
-class RpcChannel implements HandleRegistry {
-  readonly access: AddressMap<AccessPolicy> = new AddressMap()
+export class RpcChannel
+  extends ChainedAccessController
+  implements HandleRegistry {
   readonly _i_reg: RpcHandlerRegistry = new RpcHandlerRegistry()
   /**
    * @param c_send The function to send over whatever transport is used.
@@ -378,7 +252,7 @@ class RpcChannel implements HandleRegistry {
     default_policy = AccessPolicy.ALLOW,
     public reg: RpcHandlerRegistry = new RpcHandlerRegistry()
   ) {
-    this.access.put([], default_policy)
+    super(default_policy)
   }
 
   register(address: WildcardMultistringAddress, func: RpcFunction): void {
@@ -392,13 +266,6 @@ class RpcChannel implements HandleRegistry {
   }
   unregisterAll(obj: BaseRegisteredObject): void {
     this.reg.unregisterAll(obj)
-  }
-
-  setPolicy(address: WildcardMultistringAddress, policy: AccessPolicy): void {
-    this.access.put(address, policy)
-  }
-  clearPolicy(address: WildcardMultistringAddress): void {
-    this.access.put(address, undefined)
   }
 
   /**
@@ -691,7 +558,7 @@ class RpcChannel implements HandleRegistry {
       }
     }
 
-    const security_policy = this.access.get(val.to)
+    const security_policy = this.can(val.to, val.args)
     if (isDefined(security_policy) && security_policy === AccessPolicy.DENY) {
       maybeReturn(
         undefined,
@@ -714,25 +581,4 @@ class RpcChannel implements HandleRegistry {
     }
     maybeReturn(data)
   }
-}
-
-export {
-  toRpcSerialized,
-  rpcSerialize,
-  InvalidChannelError,
-  AccessDeniedError,
-  ForwardedError,
-  AccessPolicy,
-  RpcHandlerRegistry,
-  RpcChannel,
-  RpcMessage,
-  RpcRemappedFunction,
-  RpcAddress,
-  RemapArguments,
-  RpcFunction,
-  RpcFunctionAddress,
-  RpcAccessor,
-  SerializableData,
-  SerializedData,
-  BaseRegisteredObject
 }
