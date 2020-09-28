@@ -86,11 +86,9 @@ class AddressMap<T> {
         addr_str.pop()
       }
       Object.keys(map).forEach((key) => {
-        if (map[key]) {
-          addr_str.push(`[${key}]`)
-          traverse(map[key])
-          addr_str.pop()
-        }
+        addr_str.push(`[${key}]`)
+        traverse(map[key])
+        addr_str.pop()
       })
     }
     traverse(this.table)

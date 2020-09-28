@@ -105,6 +105,10 @@ describe('[registry.ts] RpcChannel', () => {
     remapped_expand(a: string, b: string): string {
       return a + b
     }
+    @RemapArguments(['expand', 'pass'], 'rm')
+    remapped_expand_pass(a: string, b: string): string {
+      return a + b
+    }
     @RemapArguments(['pass', 'pass'], 'rm')
     remapped_pass(a: string, b: string): string {
       return a + b
@@ -138,6 +142,13 @@ describe('[registry.ts] RpcChannel', () => {
       const res = (
         test.remapped_pass as unknown as { rm: (...args: any[]) => any }
       ).rm('hi', '123')
+      expect(res).to.be.equal('hi123')
+    })
+    it('expand does not consume next directive', () => {
+      const test = new Test()
+      const res = (
+        test.remapped_expand_pass as unknown as { rm: (...args: any[]) => any }
+      ).rm(['hi'], '123')
       expect(res).to.be.equal('hi123')
     })
     it('throws when given non-function', () => {
@@ -237,6 +248,17 @@ describe('[registry.ts] RpcChannel', () => {
     })
   })
   describe('send', () => {
+    it('defaults to empty args', () => {
+      c.send(['net', 'kb1rd', 'hello'])
+      expect(sent_msgs.length).to.be.equal(1)
+      expect(sent_msgs[0][0]).to.be.deep.equal({
+        to: ['net', 'kb1rd', 'hello'],
+        args: [],
+        return_addr: undefined,
+        return_type: 'promise'
+      })
+      expect(sent_msgs[0][1].length).to.be.equal(0)
+    })
     it('serializes arguments', () => {
       c.send(
         ['net', 'kb1rd', 'hello'],
@@ -268,6 +290,17 @@ describe('[registry.ts] RpcChannel', () => {
     })
   })
   describe('call', () => {
+    it('defaults to empty args', () => {
+      c.call(['net', 'kb1rd', 'hello'])
+      expect(sent_msgs.length).to.be.equal(1)
+      expect(sent_msgs[0][0]).to.be.deep.equal({
+        to: ['net', 'kb1rd', 'hello'],
+        args: [],
+        return_addr: sent_msgs[0][0].return_addr,
+        return_type: 'promise'
+      })
+      expect(sent_msgs[0][1].length).to.be.equal(0)
+    })
     it('passes args to `send`', () => {
       c.call(
         ['net', 'kb1rd', 'hello'],
@@ -390,18 +423,17 @@ describe('[registry.ts] RpcChannel', () => {
     })
   })
   describe('generate', () => {
-    const expectResolveAfter = async (
-      p: Promise<any>,
-      f: () => void
-    ): Promise<void> => {
-      let done = false
-      const promise = p.then(
-        () => (done = true) && undefined
-      )
-      f()
-      expect(done).to.be.false
-      return promise
-    }
+    it('defaults to empty args', () => {
+      c.generate(['net', 'kb1rd', 'hello'])
+      expect(sent_msgs.length).to.be.equal(1)
+      expect(sent_msgs[0][0]).to.be.deep.equal({
+        to: ['net', 'kb1rd', 'hello'],
+        args: [],
+        return_addr: sent_msgs[0][0].return_addr,
+        return_type: 'generator'
+      })
+      expect(sent_msgs[0][1].length).to.be.equal(0)
+    })
     it('passes args to `send`', async () => {
       c.generate(
         ['net', 'kb1rd', 'hello'],

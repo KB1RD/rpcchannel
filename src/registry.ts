@@ -73,7 +73,6 @@ export function RemapArguments(
     if (typeof func !== 'function') {
       throw new TypeError('Cannot remap arguments for non-function')
     }
-    // TODO: Replace .remapped with a symbol
     // eslint-disable-next-line
     descriptor.value[key as string] = function(...args: any[]) {
       const it = mapping[Symbol.iterator]()
