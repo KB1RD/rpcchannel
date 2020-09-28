@@ -8,7 +8,15 @@ import {
   WildcardMultistringAddress,
   AddressMap
 } from './addrmap'
-import { ChainedAccessController, AccessPolicy } from './accesscontrol'
+import {
+  ChainedAccessController,
+  AccessPolicy,
+  AccessController,
+  OptAccessPolicy,
+  CanCallFunction,
+  RequiresPermissions,
+  PermissionedAccessCanFunction
+} from './accesscontrol'
 import { rpcSerialize, SerializableData, SerializedData } from './serializer'
 import { isDefined } from './utils'
 
@@ -32,6 +40,8 @@ type RpcResult =
 export interface RpcFunction extends WithValidAddressKey {
   (src: RpcChannel, wildcards: string[], ...args: SerializedData[]): RpcResult
   [RpcRemappedFunction]?: RpcFunction
+  [CanCallFunction]?: PermissionedAccessCanFunction
+  [RequiresPermissions]?: Iterable<string>
 }
 
 export function RpcAddress(address: WildcardMultistringAddress) {
@@ -163,9 +173,15 @@ interface HandleRegistry {
  * Where RPC handles are registered to a particular address. This can be
  * re-used between different `RpcChannel`s.
  */
-export class RpcHandlerRegistry implements HandleRegistry {
+export class RpcHandlerRegistry
+  extends ChainedAccessController
+  implements HandleRegistry {
   map: AddressMap<RpcFunction> = new AddressMap()
   return_seq_id = 0
+
+  constructor() {
+    super(undefined)
+  }
 
   register(address: WildcardMultistringAddress, func: RpcFunction): void {
     while (func[RpcRemappedFunction]) {
@@ -239,21 +255,18 @@ export class ForwardedError extends Error {}
 /**
  * A wrapper class for functions to perform remote procedure calls.
  */
-export class RpcChannel
-  extends ChainedAccessController
-  implements HandleRegistry {
+export class RpcChannel implements HandleRegistry, AccessController {
   readonly _i_reg: RpcHandlerRegistry = new RpcHandlerRegistry()
+  access_controller?: AccessController = new ChainedAccessController(undefined)
   /**
    * @param c_send The function to send over whatever transport is used.
    * @param reg The handle registry. This can be changed later.
    */
   constructor(
     protected readonly c_send: (msg: RpcMessage, xfer: Transferable[]) => void,
-    default_policy = AccessPolicy.ALLOW,
+    protected readonly default_policy = AccessPolicy.ALLOW,
     public reg: RpcHandlerRegistry = new RpcHandlerRegistry()
-  ) {
-    super(default_policy)
-  }
+  ) {}
 
   register(address: WildcardMultistringAddress, func: RpcFunction): void {
     this.reg.register(address, func)
@@ -266,6 +279,21 @@ export class RpcChannel
   }
   unregisterAll(obj: BaseRegisteredObject): void {
     this.reg.unregisterAll(obj)
+  }
+
+  can(
+    addr: MultistringAddress,
+    opts: { args: SerializableData[], channel: RpcChannel, func?: RpcFunction }
+  ): OptAccessPolicy {
+    let val = this.access_controller && this.access_controller.can(addr, opts)
+    if (isDefined(val)) {
+      return val
+    }
+    val = this._i_reg.can(addr, opts)
+    if (isDefined(val)) {
+      return val
+    }
+    return this.default_policy
   }
 
   /**
@@ -558,7 +586,13 @@ export class RpcChannel
       }
     }
 
-    const security_policy = this.can(val.to, val.args)
+    const wc: string[] = []
+    const func = this._i_reg.map.get(val.to, wc) || this.reg.map.get(val.to, wc)
+
+    const security_policy = this.can(
+      val.to,
+      { args: val.args, channel: this, func }
+    )
     if (isDefined(security_policy) && security_policy === AccessPolicy.DENY) {
       maybeReturn(
         undefined,
@@ -567,13 +601,13 @@ export class RpcChannel
       return
     }
 
-    const wc: string[] = []
-    const func = this._i_reg.map.get(val.to, wc) || this.reg.map.get(val.to, wc)
+    if (!func) {
+      maybeReturn(undefined, new TypeError('Function at address is undefined'))
+      return
+    }
+
     let data: RpcResult
     try {
-      if (!func) {
-        throw new TypeError('Function at address is undefined')
-      }
       data = (func as RpcFunction)(this, wc, ...val.args)
     } catch (e) {
       maybeReturn(undefined, e)

@@ -794,7 +794,36 @@ describe('[registry.ts] RpcChannel', () => {
         expect(sent_msgs[0][1].length).to.be.equal(0)
       })
       it('`send`s error if access denied BEFORE getting function', () => {
-        c.access_chain.push(new FunctionAccessController((addr) => {
+        c.access_controller = new FunctionAccessController((addr) => {
+          expect(addr).to.be.deep.equal(['net', 'kb1rd', 'test'])
+          return false
+        })
+        c.receive({
+          to: ['net', 'kb1rd', 'test'],
+          args: [],
+          return_addr: ['return']
+        })
+        expect(sent_msgs.length).to.be.equal(1)
+        expect(sent_msgs[0][0]).to.be.deep.equal({
+          to: ['return'],
+          args: [
+            undefined,
+            {
+              name: 'AccessDeniedError',
+              columnNumber: undefined,
+              fileName: undefined,
+              lineNumber: undefined,
+              message: 'Access denied',
+              stack: 'Stack trace redacted for security reasons'
+            }
+          ],
+          return_addr: undefined,
+          return_type: 'promise'
+        })
+        expect(sent_msgs[0][1].length).to.be.equal(0)
+      })
+      it('`send`s error if registry denies access', () => {
+        c._i_reg.access_chain.push(new FunctionAccessController((addr) => {
           expect(addr).to.be.deep.equal(['net', 'kb1rd', 'test'])
           return false
         }))
