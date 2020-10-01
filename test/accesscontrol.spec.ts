@@ -4,7 +4,6 @@ import {
   DenyAccessController,
   FunctionAccessController,
   MultistringAddress,
-  SerializableData,
   AccessPolicy,
   ChainedAccessController,
   LegacyAccessController,
@@ -13,8 +12,78 @@ import {
   AutoFunctionAccessController,
   RequiresPermissions,
   CanCallFunction,
-  OptAccessPolicy
+  OptAccessPolicy,
+  RequirePermissions,
+  SetCanCallFunc
 } from '../src/index'
+
+describe('[accesscontrol.ts] RequirePermissions', () => {
+  it('sets RequiresPermissions on member function', () => {
+    class Test {
+      @RequirePermissions(['hello', 'world'])
+      member(): number {
+        return 1
+      }
+    }
+    expect((new Test().member as any)[RequiresPermissions]).to.be.deep.equal(
+      ['hello', 'world']
+    )
+  })
+  it('throws error when applied to non-function', () => {
+    expect(() => {
+      const myobj = {}
+      RequirePermissions([])(
+        myobj,
+        'test',
+        {
+          configurable: true,
+          enumerable: false,
+          value: 'hi',
+          writable: true,
+          get(): string {
+            return 'hi'
+          },
+          set(v: any): void {
+            throw new Error('Should not happen')
+          }
+        }
+      )
+    }).to.throw('Cannot require permissions for non-function')
+  })
+})
+describe('[accesscontrol.ts] SetCanCallFunc', () => {
+  it('sets CanCallFunction on member function', () => {
+    const func = () => AccessPolicy.ALLOW
+    class Test {
+      @SetCanCallFunc(func)
+      member(): number {
+        return 1
+      }
+    }
+    expect((new Test().member as any)[CanCallFunction]).to.be.equal(func)
+  })
+  it('throws error when applied to non-function', () => {
+    expect(() => {
+      const myobj = {}
+      SetCanCallFunc(() => undefined)(
+        myobj,
+        'test',
+        {
+          configurable: true,
+          enumerable: false,
+          value: 'hi',
+          writable: true,
+          get(): string {
+            return 'hi'
+          },
+          set(v: any): void {
+            throw new Error('Should not happen')
+          }
+        }
+      )
+    }).to.throw('Cannot set access controller func on non-function')
+  })
+})
 
 const default_opts = {
   args: [{}, Symbol(), 'hi'],

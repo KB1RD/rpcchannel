@@ -132,3 +132,32 @@ export class AutoFunctionAccessController implements AccessController {
     return OptAccessPolicy.NONE
   }
 }
+
+export function RequirePermissions(perms: string[]) {
+  return function (
+    // eslint-disable-next-line
+    target: any,
+    propertyKey: string,
+    descriptor: PropertyDescriptor
+  ): void {
+    const func = descriptor.value
+    if (typeof func !== 'function') {
+      throw new TypeError('Cannot require permissions for non-function')
+    }
+    func[RequiresPermissions] = perms
+  }
+}
+export function SetCanCallFunc(can: AccessCanFunction) {
+  return function (
+    // eslint-disable-next-line
+    target: any,
+    propertyKey: string,
+    descriptor: PropertyDescriptor
+  ): void {
+    const func = descriptor.value
+    if (typeof func !== 'function') {
+      throw new TypeError('Cannot set access controller func on non-function')
+    }
+    func[CanCallFunction] = can
+  }
+}
