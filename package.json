@@ -1,6 +1,6 @@
 {
   "name": "rpcchannel",
-  "version": "0.2.4",
+  "version": "0.3.0",
   "description": "Easy RPC with permission controls",
   "main": "lib/index.js",
   "types": "lib/src/index.d.ts",
@@ -9,7 +9,7 @@
     "messagechannel",
     "worker"
   ],
-  "typings": "lib/index.d.ts",
+  "typings": "lib/src/index.d.ts",
   "author": "Nathan Pennie <kb1rd@kb1rd.net> [@kb1rd:kb1rd.net]",
   "license": "LGPL-3.0-or-later",
   "scripts": {

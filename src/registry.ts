@@ -271,6 +271,11 @@ interface RpcChannelOpts {
    */
   await_first_msg?: boolean
 }
+interface CompleteRpcChannelOpts {
+  timeout: number
+  keep_alive_interval: number
+  await_first_msg: boolean
+}
 
 export enum RpcState {
   INACTIVE,
@@ -308,7 +313,7 @@ export class RpcChannel
     this.resetKeepAlive()
   }
 
-  get opts() {
+  get opts(): CompleteRpcChannelOpts {
     const timeout = this._opts.timeout || 0
     return {
       timeout,
@@ -369,7 +374,7 @@ export class RpcChannel
     const old_state = this._state
     this._state = state
     this.emit('statechange', state, old_state)
-    switch(state) {
+    switch (state) {
       case RpcState.ACTIVE:
         this.emit('active')
         break
@@ -401,7 +406,7 @@ export class RpcChannel
     this._stateChange(RpcState.ACTIVE)
     this.resetTimeout()
   }
-  close(send: boolean = true): void {
+  close(send = true): void {
     if (this.state === RpcState.CLOSED) {
       return
     }
@@ -422,7 +427,7 @@ export class RpcChannel
       delete this.active_keepalive
     }
   }
-  stop = () => this.close()
+  stop = (): void => this.close()
 
   register(address: WildcardMultistringAddress, func: RpcFunction): void {
     this.reg.register(address, func)

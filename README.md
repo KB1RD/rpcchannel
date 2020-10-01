@@ -76,30 +76,7 @@ the call, and `wc` is an array of values for wildcards. Wildcards can be
 filtered by permissions, whereas arguments cannot be.
 
 Here's an example of setting permissions to a particular endpoint:
-```typescript
-const {
-  RpcChannel,
-  RpcAddress,
-  EnforceMethodArgSchema,
-  AccessPolicy
-} = require('@kb1rd/rpcchannel')
-
-// Just pretend these are in different browsing contexts :P
-const a: RpcChannel = new RpcChannel((msg) =>
-  b.receive(JSON.parse(JSON.stringify(msg)))
-)
-const b = new RpcChannel((msg) => a.receive(JSON.parse(JSON.stringify(msg))))
-
-b.register(['net', 'kb1rd', 'say', undefined], (channel, wc) => {
-  console.log(wc[0])
-})
-
-b.setPolicy(['net', 'kb1rd', 'say', 'badword'], AccessPolicy.DENY)
-
-a.send(['net', 'kb1rd', 'say', 'badword']) // Throws an error
-```
-Wildcards can also be used with policies. In addition, the default policy can
-be set to `DENY` with `b.setPolicy([], AccessPolicy.DENY)`.
+`Permissions are being reworked, this will be updated.`
 
 Functions can also be given arguments
 ```typescript
