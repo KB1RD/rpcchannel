@@ -13,7 +13,7 @@ export const OptAccessPolicy = Object.assign({ NONE: null }, AccessPolicy)
 
 export type AccessCanFunction = (
   addr: MultistringAddress,
-  opts: { args: SerializableData[], channel: RpcChannel, func?: RpcFunction }
+  opts: { args: SerializableData[]; channel: RpcChannel; func?: RpcFunction }
 ) => OptAccessPolicy
 
 /**
@@ -22,7 +22,7 @@ export type AccessCanFunction = (
 export interface AccessController {
   can(
     addr: MultistringAddress,
-    opts: { args: SerializableData[], channel: RpcChannel, func?: RpcFunction }
+    opts: { args: SerializableData[]; channel: RpcChannel; func?: RpcFunction }
   ): OptAccessPolicy
 }
 /**
@@ -55,7 +55,7 @@ export class ChainedAccessController implements AccessController {
   constructor(public default_ap: OptAccessPolicy = OptAccessPolicy.NONE) {}
   can(
     addr: MultistringAddress,
-    opts: { args: SerializableData[], channel: RpcChannel, func?: RpcFunction }
+    opts: { args: SerializableData[]; channel: RpcChannel; func?: RpcFunction }
   ): OptAccessPolicy {
     let val: OptAccessPolicy
     this.access_chain.some((ctrl) => isDefined((val = ctrl.can(addr, opts))))
@@ -78,7 +78,7 @@ export class FunctionLookupAccessController implements AccessController {
   public readonly map = new AddressMap<AccessCanFunction>()
   can(
     to: MultistringAddress,
-    opts: { args: SerializableData[], channel: RpcChannel, func?: RpcFunction }
+    opts: { args: SerializableData[]; channel: RpcChannel; func?: RpcFunction }
   ): OptAccessPolicy {
     const func = this.map.get(to)
     return (func && func(to, opts)) || OptAccessPolicy.NONE
@@ -89,9 +89,9 @@ export const RequiresPermissions = Symbol('RequiresPermissions')
 export type PermissionedAccessCanFunction = (
   addr: MultistringAddress,
   opts: {
-    args: SerializableData[],
-    channel: RpcChannel,
-    func?: RpcFunction,
+    args: SerializableData[]
+    channel: RpcChannel
+    func?: RpcFunction
     require: (perm: string) => void
   }
 ) => OptAccessPolicy
@@ -105,13 +105,10 @@ export class AutoFunctionAccessController implements AccessController {
   constructor(public perms = new Set<string>()) {}
   can(
     to: MultistringAddress,
-    opts: { args: SerializableData[], channel: RpcChannel, func?: RpcFunction }
+    opts: { args: SerializableData[]; channel: RpcChannel; func?: RpcFunction }
   ): OptAccessPolicy {
     const obj = opts.func && opts.func[RequiresPermissions]
-    if (
-      typeof obj === 'object' &&
-      typeof obj[Symbol.iterator] === 'function'
-    ) {
+    if (typeof obj === 'object' && typeof obj[Symbol.iterator] === 'function') {
       for (const requirement of obj) {
         if (!this.perms.has(requirement)) {
           return AccessPolicy.DENY

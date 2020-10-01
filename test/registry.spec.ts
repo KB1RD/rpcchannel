@@ -18,7 +18,8 @@ import {
   RpcFunction,
   RpcHandlerRegistry,
   MultistringAddress,
-  FunctionAccessController
+  FunctionAccessController,
+  RpcState
 } from '../src/index'
 
 /**
@@ -82,6 +83,168 @@ describe('[registry.ts] RpcChannel', () => {
   beforeEach(() => {
     sent_msgs = []
     c = new RpcChannel((msg, xfer) => sent_msgs.push([msg, xfer]))
+  })
+  afterEach(() => {
+    c.close()
+  })
+  describe('_stateChange', () => {
+    it('emits event', () => {
+      let events: [RpcState, RpcState][] = []
+      c.on('statechange', (c, o) => events.push([c, o]))
+
+      c._stateChange(RpcState.ACTIVE)
+      expect(events).to.be.deep.equal([[RpcState.ACTIVE, RpcState.INACTIVE]])
+      events.length = 0
+      c._stateChange(RpcState.CLOSED)
+      expect(events).to.be.deep.equal([[RpcState.CLOSED, RpcState.ACTIVE]])
+    })
+    it('emits active event', () => {
+      let events: undefined[] = []
+      c.on('active', () => events.push(undefined))
+
+      c._stateChange(RpcState.ACTIVE)
+      expect(events.length).to.be.deep.equal(1)
+      c._stateChange(RpcState.CLOSED)
+      expect(events.length).to.be.deep.equal(1)
+    })
+    it('emits closed event', () => {
+      let events: undefined[] = []
+      c.on('close', () => events.push(undefined))
+
+      c._stateChange(RpcState.CLOSED)
+      expect(events.length).to.be.deep.equal(1)
+      c._stateChange(RpcState.ACTIVE)
+      expect(events.length).to.be.deep.equal(1)
+    })
+  })
+  describe('start/stop', () => {
+    it('starts `INACTIVE`', () => {
+      expect(c.state).to.be.equal(RpcState.INACTIVE)
+    })
+    it('`start` transitions to `ACTIVE`', async () => {
+      expect(c.state).to.be.equal(RpcState.INACTIVE)
+      await c.start()
+      expect(c.state).to.be.equal(RpcState.ACTIVE)
+    })
+    it('waits for message if `await_first_msg` is set', async () => {
+      expect(c.state).to.be.equal(RpcState.INACTIVE)
+      c.setAwaitFirstMsg(true)
+      let done = false
+      c.start().then(() => (done = true))
+      expect(done).to.be.false
+      await new Promise((r) => setTimeout(r, 20))
+      expect(done).to.be.false
+      expect(c.state).to.be.equal(RpcState.INACTIVE)
+      c.receive({ to: ['_', 'keepalive'], args: [] })
+      await new Promise((r) => setTimeout(r, 1))
+      expect(done).to.be.true
+      expect(c.state).to.be.equal(RpcState.ACTIVE)
+    })
+    it('starts timeout', async () => {
+      c.setTimeout(5000)
+      expect(c.active_timeout).to.be.undefined
+      await c.start()
+      expect(c.active_timeout).to.not.be.undefined
+    })
+    it('starts timeout only after awaiting msg', async () => {
+      c.setTimeout(5000)
+      c.setAwaitFirstMsg(true)
+      expect(c.active_timeout).to.be.undefined
+      const promise = c.start()
+      await new Promise((r) => setTimeout(r, 1))
+      expect(c.active_timeout).to.be.undefined
+      c.receive({ to: ['_', 'keepalive'], args: [] })
+      await promise
+      expect(c.active_timeout).to.not.be.undefined
+    })
+    it('stays closed if closed during await', async () => {
+      expect(c.state).to.be.equal(RpcState.INACTIVE)
+      c.setAwaitFirstMsg(true)
+
+      // Note the *lack* of await
+      let done = false
+      c.start().then(() => (done = true))
+
+      await new Promise((r) => setTimeout(r, 5))
+      expect(done).to.be.false
+      c.close()
+      await new Promise((r) => setTimeout(r, 1))
+      expect(done).to.be.true
+      expect(c.state).to.be.equal(RpcState.CLOSED)
+
+      c.receive({ to: ['_', 'keepalive'], args: [] })
+      await new Promise((r) => setTimeout(r, 5))
+      expect(c.state).to.be.equal(RpcState.CLOSED)
+    })
+    it('stays closed if closed before start', async () => {
+      expect(c.state).to.be.equal(RpcState.INACTIVE)
+      c.close()
+      expect(c.state).to.be.equal(RpcState.CLOSED)
+      await c.start()
+      expect(c.state).to.be.equal(RpcState.CLOSED)
+    })
+  })
+  describe('timeouts', () => {
+    it('closes channel after time elapsed', async () => {
+      c.setTimeout(20)
+      await c.start()
+      expect(c.state).to.be.equal(RpcState.ACTIVE)
+      await new Promise((r) => setTimeout(r, 1))
+      expect(c.state).to.be.equal(RpcState.ACTIVE)
+      await new Promise((r) => setTimeout(r, 20))
+      expect(c.state).to.be.equal(RpcState.CLOSED)
+    })
+    it('does not close channel if any event sent', async () => {
+      c.setTimeout(20)
+      await c.start()
+      expect(c.state).to.be.equal(RpcState.ACTIVE)
+      await new Promise((r) => setTimeout(r, 10))
+      expect(c.state).to.be.equal(RpcState.ACTIVE)
+      c.receive({ to: ['sadfsd', 'fsdfsd', 'sdfds'], args: [] })
+      await new Promise((r) => setTimeout(r, 11))
+      expect(c.state).to.be.equal(RpcState.ACTIVE)
+    })
+    it('clears old timeout when timeout changed', async () => {
+      c.setTimeout(20)
+      await c.start()
+      expect(c.state).to.be.equal(RpcState.ACTIVE)
+      await new Promise((r) => setTimeout(r, 10))
+      expect(c.state).to.be.equal(RpcState.ACTIVE)
+      c.setTimeout(15)
+      await new Promise((r) => setTimeout(r, 10))
+      expect(c.state).to.be.equal(RpcState.ACTIVE)
+    })
+  })
+  describe('keepalive', () => {
+    it('sends initial keepalive on setup', async () => {
+      c.setTimeout(undefined, 10)
+      expect(sent_msgs).to.be.deep.equal([[
+          {
+          to: ['_', 'keepalive'],
+          args: [],
+          return_type: 'promise',
+          return_addr: undefined
+        },
+        []
+      ]])
+    })
+    it('sends keepalive on interval', async () => {
+      c.setTimeout(undefined, 10)
+      await c.start()
+      sent_msgs.length = 0
+      await new Promise((r) => setTimeout(r, 5))
+      expect(sent_msgs.length).to.be.equal(0)
+      await new Promise((r) => setTimeout(r, 6))
+      expect(sent_msgs).to.be.deep.equal([[
+          {
+          to: ['_', 'keepalive'],
+          args: [],
+          return_type: 'promise',
+          return_addr: undefined
+        },
+        []
+      ]])
+    })
   })
   class Test {
     @RpcAddress(['net', 'kb1rd', undefined])
@@ -187,6 +350,7 @@ describe('[registry.ts] RpcChannel', () => {
     })
   })
   describe('register', () => {
+    beforeEach(() => c.start())
     it('basic register', () => {
       const func = () => undefined
       c.register(['net', 'kb1rd', 'test'], func)
@@ -206,6 +370,7 @@ describe('[registry.ts] RpcChannel', () => {
     })
   })
   describe('unregister', () => {
+    beforeEach(() => c.start())
     it('unregister by address', () => {
       const func = () => undefined
       c.register(['net', 'kb1rd', 'test'], func)
@@ -214,6 +379,7 @@ describe('[registry.ts] RpcChannel', () => {
     })
   })
   describe('registerAll', () => {
+    beforeEach(() => c.start())
     it('registers to correct endpoint', () => {
       c.registerAll(new Test() as {})
       expect(
@@ -240,6 +406,7 @@ describe('[registry.ts] RpcChannel', () => {
     })
   })
   describe('unregisterAll', () => {
+    beforeEach(() => c.start())
     it('unregisters endpoints', () => {
       c.registerAll(new Test() as {})
       c.unregisterAll(new Test() as {})
@@ -248,6 +415,7 @@ describe('[registry.ts] RpcChannel', () => {
     })
   })
   describe('send', () => {
+    beforeEach(() => c.start())
     it('defaults to empty args', () => {
       c.send(['net', 'kb1rd', 'hello'])
       expect(sent_msgs.length).to.be.equal(1)
@@ -290,6 +458,7 @@ describe('[registry.ts] RpcChannel', () => {
     })
   })
   describe('call', () => {
+    beforeEach(() => c.start())
     it('defaults to empty args', () => {
       c.call(['net', 'kb1rd', 'hello'])
       expect(sent_msgs.length).to.be.equal(1)
@@ -423,6 +592,7 @@ describe('[registry.ts] RpcChannel', () => {
     })
   })
   describe('generate', () => {
+    beforeEach(() => c.start())
     it('defaults to empty args', () => {
       c.generate(['net', 'kb1rd', 'hello'])
       expect(sent_msgs.length).to.be.equal(1)
@@ -595,6 +765,7 @@ describe('[registry.ts] RpcChannel', () => {
     })
   })
   describe('call_obj', () => {
+    beforeEach(() => c.start())
     it('passes args to `send`', () => {
       c.call_obj.net.kb1rd.hello(123, 'abc', { [toRpcSerialized]: () => 'hi' })
       expect(sent_msgs.length).to.be.equal(1)
@@ -629,6 +800,7 @@ describe('[registry.ts] RpcChannel', () => {
     })
   }) */
   describe('receive', () => {
+    beforeEach(() => c.start())
     it('calls function with arguments', () => {
       let called = false
       let error: Error | undefined = undefined

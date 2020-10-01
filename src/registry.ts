@@ -3,6 +3,8 @@
  */
 /** */
 
+import EventEmitter from 'eventemitter3'
+
 import {
   MultistringAddress,
   WildcardMultistringAddress,
@@ -251,12 +253,44 @@ export class AccessDeniedError extends Error {
 
 export class ForwardedError extends Error {}
 
+interface RpcChannelOpts {
+  /**
+   * If a keepalive has not been received for this much time, assume that this
+   * `RpcChannel` has been closed.
+   */
+  timeout?: number
+  /**
+   * The interval with which to send keep-alives. This must be shorter than the
+   * timeout interval on the receiving end.
+   */
+  keep_alive_interval?: number
+  /**
+   * Waits to start the channel until a message is received. This should only
+   * be used on the end that is started first: Such as an `iframe` parent, a
+   * worker's host, or a tab's creator.
+   */
+  await_first_msg?: boolean
+}
+
+export enum RpcState {
+  INACTIVE,
+  ACTIVE,
+  CLOSED
+}
+
 /**
  * A wrapper class for functions to perform remote procedure calls.
  */
-export class RpcChannel implements HandleRegistry, AccessController {
+export class RpcChannel
+  extends EventEmitter
+  implements HandleRegistry, AccessController {
   readonly _i_reg: RpcHandlerRegistry = new RpcHandlerRegistry()
   access_controller?: AccessController = new ChainedAccessController(undefined)
+
+  active_timeout?: number
+  active_keepalive?: number
+  protected _state: RpcState = RpcState.INACTIVE
+
   /**
    * @param c_send The function to send over whatever transport is used.
    * @param reg The handle registry. This can be changed later.
@@ -264,8 +298,131 @@ export class RpcChannel implements HandleRegistry, AccessController {
   constructor(
     protected readonly c_send: (msg: RpcMessage, xfer: Transferable[]) => void,
     protected readonly default_policy = AccessPolicy.ALLOW,
-    public reg: RpcHandlerRegistry = new RpcHandlerRegistry()
-  ) {}
+    public reg: RpcHandlerRegistry = new RpcHandlerRegistry(),
+    protected readonly _opts: RpcChannelOpts = {}
+  ) {
+    super()
+    this._i_reg.register(['_', 'close'], () => this.close(false))
+    this.on('rawmessage', () => this.resetTimeout())
+    // Keep alives start getting sent immediately
+    this.resetKeepAlive()
+  }
+
+  get opts() {
+    const timeout = this._opts.timeout || 0
+    return {
+      timeout,
+      keep_alive_interval: this._opts.keep_alive_interval || timeout / 2,
+      await_first_msg: Boolean(this._opts.await_first_msg)
+    }
+  }
+  get state(): RpcState {
+    return this._state
+  }
+
+  resetTimeout(): void {
+    if (isDefined(this.active_timeout)) {
+      clearTimeout(this.active_timeout)
+      delete this.active_timeout
+    }
+    if (this.state !== RpcState.ACTIVE) {
+      return
+    }
+    if (this.opts.timeout) {
+      this.active_timeout = setTimeout(() => {
+        this.close()
+        delete this.active_timeout
+      }, this.opts.timeout)
+    }
+  }
+  sendKeepAlive(): void {
+    if (this.opts.keep_alive_interval) {
+      try {
+        this.send(['_', 'keepalive'])
+      } catch (e) {
+        // TODO
+      }
+    }
+  }
+  resetKeepAlive(): void {
+    this.sendKeepAlive()
+    if (isDefined(this.active_keepalive)) {
+      clearInterval(this.active_keepalive)
+      delete this.active_keepalive
+    }
+    if (this.opts.keep_alive_interval) {
+      this.active_keepalive = setInterval(() => {
+        this.sendKeepAlive()
+      }, this.opts.keep_alive_interval)
+    }
+  }
+  setTimeout(timeout?: number, keep_alive_interval?: number): void {
+    Object.assign(this._opts, { timeout, keep_alive_interval })
+    this.resetTimeout()
+    this.resetKeepAlive()
+  }
+  setAwaitFirstMsg(should: boolean): void {
+    this._opts.await_first_msg = should
+  }
+
+  _stateChange(state: RpcState): void {
+    const old_state = this._state
+    this._state = state
+    this.emit('statechange', state, old_state)
+    switch(state) {
+      case RpcState.ACTIVE:
+        this.emit('active')
+        break
+      case RpcState.CLOSED:
+        this.emit('close')
+        break
+    }
+  }
+
+  async start(): Promise<void> {
+    if (this._state !== RpcState.INACTIVE) {
+      return
+    }
+    if (this.opts.await_first_msg) {
+      await new Promise((r) => {
+        const closefunc = () => {
+          r()
+          this.off('rawmessage', closefunc)
+          this.off('close', closefunc)
+        }
+        this.once('rawmessage', closefunc)
+        this.once('close', closefunc)
+      })
+    }
+    // Double check that this wasn't closed while `await`ing
+    if (this._state !== RpcState.INACTIVE) {
+      return
+    }
+    this._stateChange(RpcState.ACTIVE)
+    this.resetTimeout()
+  }
+  close(send: boolean = true): void {
+    if (this.state === RpcState.CLOSED) {
+      return
+    }
+    if (send) {
+      try {
+        this.send(['_', 'close'])
+      } catch (e) {
+        // TODO
+      }
+    }
+    this._stateChange(RpcState.CLOSED)
+    if (this.active_timeout) {
+      clearTimeout(this.active_timeout)
+      delete this.active_timeout
+    }
+    if (this.active_keepalive) {
+      clearInterval(this.active_keepalive)
+      delete this.active_keepalive
+    }
+  }
+  stop = () => this.close()
 
   register(address: WildcardMultistringAddress, func: RpcFunction): void {
     this.reg.register(address, func)
@@ -282,7 +439,7 @@ export class RpcChannel implements HandleRegistry, AccessController {
 
   can(
     addr: MultistringAddress,
-    opts: { args: SerializableData[], channel: RpcChannel, func?: RpcFunction }
+    opts: { args: SerializableData[]; channel: RpcChannel; func?: RpcFunction }
   ): OptAccessPolicy {
     let val = this.access_controller && this.access_controller.can(addr, opts)
     if (isDefined(val)) {
@@ -480,6 +637,8 @@ export class RpcChannel implements HandleRegistry, AccessController {
    * @param val Incoming message
    */
   receive(val: RpcMessage): void {
+    this.emit('rawmessage', val)
+
     type ItType = AsyncGenerator<SerializableData, void, void>
     const maybeReturn = (
       data?: SerializableData | Promise<SerializableData> | ItType,
@@ -588,10 +747,11 @@ export class RpcChannel implements HandleRegistry, AccessController {
     const wc: string[] = []
     const func = this._i_reg.map.get(val.to, wc) || this.reg.map.get(val.to, wc)
 
-    const security_policy = this.can(
-      val.to,
-      { args: val.args, channel: this, func }
-    )
+    const security_policy = this.can(val.to, {
+      args: val.args,
+      channel: this,
+      func
+    })
     if (isDefined(security_policy) && security_policy === AccessPolicy.DENY) {
       maybeReturn(
         undefined,
