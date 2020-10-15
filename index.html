@@ -132,29 +132,8 @@ a.send([<span class="hljs-string">&#x27;net&#x27;</span>, <span class="hljs-stri
 				<p>Note the arguments of the function. <code>channel</code> is the RPC channel that recieved
 					the call, and <code>wc</code> is an array of values for wildcards. Wildcards can be
 				filtered by permissions, whereas arguments cannot be.</p>
-				<p>Here&#39;s an example of setting permissions to a particular endpoint:</p>
-				<pre><code class="language-typescript"><span class="hljs-keyword">const</span> {
-  RpcChannel,
-  RpcAddress,
-  EnforceMethodArgSchema,
-  AccessPolicy
-} = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;@kb1rd/rpcchannel&#x27;</span>)
-
-<span class="hljs-comment">// Just pretend these are in different browsing contexts :P</span>
-<span class="hljs-keyword">const</span> a: RpcChannel = <span class="hljs-keyword">new</span> RpcChannel(<span class="hljs-function">(<span class="hljs-params">msg</span>) =&gt;</span>
-  b.receive(<span class="hljs-built_in">JSON</span>.parse(<span class="hljs-built_in">JSON</span>.stringify(msg)))
-)
-<span class="hljs-keyword">const</span> b = <span class="hljs-keyword">new</span> RpcChannel(<span class="hljs-function">(<span class="hljs-params">msg</span>) =&gt;</span> a.receive(<span class="hljs-built_in">JSON</span>.parse(<span class="hljs-built_in">JSON</span>.stringify(msg))))
-
-b.register([<span class="hljs-string">&#x27;net&#x27;</span>, <span class="hljs-string">&#x27;kb1rd&#x27;</span>, <span class="hljs-string">&#x27;say&#x27;</span>, <span class="hljs-literal">undefined</span>], <span class="hljs-function">(<span class="hljs-params">channel, wc</span>) =&gt;</span> {
-  <span class="hljs-built_in">console</span>.log(wc[<span class="hljs-number">0</span>])
-})
-
-b.setPolicy([<span class="hljs-string">&#x27;net&#x27;</span>, <span class="hljs-string">&#x27;kb1rd&#x27;</span>, <span class="hljs-string">&#x27;say&#x27;</span>, <span class="hljs-string">&#x27;badword&#x27;</span>], AccessPolicy.DENY)
-
-a.send([<span class="hljs-string">&#x27;net&#x27;</span>, <span class="hljs-string">&#x27;kb1rd&#x27;</span>, <span class="hljs-string">&#x27;say&#x27;</span>, <span class="hljs-string">&#x27;badword&#x27;</span>]) <span class="hljs-comment">// Throws an error</span></code></pre>
-				<p>Wildcards can also be used with policies. In addition, the default policy can
-				be set to <code>DENY</code> with <code>b.setPolicy([], AccessPolicy.DENY)</code>.</p>
+				<p>Here&#39;s an example of setting permissions to a particular endpoint:
+				<code>Permissions are being reworked, this will be updated.</code></p>
 				<p>Functions can also be given arguments</p>
 				<pre><code class="language-typescript"><span class="hljs-keyword">const</span> {
   RpcChannel,
@@ -268,16 +247,22 @@ test()</code></pre>
 						<a href="globals.html"><em>Globals</em></a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_addrmap_.html">&quot;addrmap&quot;</a>
+						<a href="modules/_accesscontrol_.html">&quot;accesscontrol&quot;</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_core_.html">&quot;core&quot;</a>
+						<a href="modules/_addrmap_.html">&quot;addrmap&quot;</a>
 					</li>
 					<li class=" tsd-kind-module">
 						<a href="modules/_index_.html">&quot;index&quot;</a>
 					</li>
 					<li class=" tsd-kind-module">
+						<a href="modules/_registry_.html">&quot;registry&quot;</a>
+					</li>
+					<li class=" tsd-kind-module">
 						<a href="modules/_schema_.html">&quot;schema&quot;</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/_serializer_.html">&quot;serializer&quot;</a>
 					</li>
 					<li class=" tsd-kind-module">
 						<a href="modules/_utils_.html">&quot;utils&quot;</a>
@@ -307,6 +292,9 @@ test()</code></pre>
 			<ul class="tsd-legend">
 				<li class="tsd-kind-class"><span class="tsd-kind-icon">Class</span></li>
 				<li class="tsd-kind-class tsd-has-type-parameter"><span class="tsd-kind-icon">Class with type parameter</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-enum"><span class="tsd-kind-icon">Enumeration</span></li>
 			</ul>
 			<ul class="tsd-legend">
 				<li class="tsd-kind-interface"><span class="tsd-kind-icon">Interface</span></li>

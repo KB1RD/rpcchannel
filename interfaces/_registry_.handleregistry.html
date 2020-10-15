@@ -56,10 +56,10 @@
 					<a href="../globals.html">Globals</a>
 				</li>
 				<li>
-					<a href="../modules/_core_.html">&quot;core&quot;</a>
+					<a href="../modules/_registry_.html">&quot;registry&quot;</a>
 				</li>
 				<li>
-					<a href="_core_.handleregistry.html">HandleRegistry</a>
+					<a href="_registry_.handleregistry.html">HandleRegistry</a>
 				</li>
 			</ul>
 			<h1>Interface HandleRegistry</h1>
@@ -87,8 +87,8 @@
 			<section class="tsd-panel">
 				<h3>Implemented by</h3>
 				<ul class="tsd-hierarchy">
-					<li><a href="../classes/_core_.rpcchannel.html" class="tsd-signature-type">RpcChannel</a></li>
-					<li><a href="../classes/_core_.rpchandlerregistry.html" class="tsd-signature-type">RpcHandlerRegistry</a></li>
+					<li><a href="../classes/_registry_.rpcchannel.html" class="tsd-signature-type">RpcChannel</a></li>
+					<li><a href="../classes/_registry_.rpchandlerregistry.html" class="tsd-signature-type">RpcHandlerRegistry</a></li>
 				</ul>
 			</section>
 			<section class="tsd-panel-group tsd-index-group">
@@ -98,10 +98,10 @@
 						<section class="tsd-index-section tsd-is-not-exported">
 							<h3>Methods</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-method tsd-parent-kind-interface tsd-is-not-exported"><a href="_core_.handleregistry.html#register" class="tsd-kind-icon">register</a></li>
-								<li class="tsd-kind-method tsd-parent-kind-interface tsd-is-not-exported"><a href="_core_.handleregistry.html#registerall" class="tsd-kind-icon">register<wbr>All</a></li>
-								<li class="tsd-kind-method tsd-parent-kind-interface tsd-is-not-exported"><a href="_core_.handleregistry.html#unregister" class="tsd-kind-icon">unregister</a></li>
-								<li class="tsd-kind-method tsd-parent-kind-interface tsd-is-not-exported"><a href="_core_.handleregistry.html#unregisterall" class="tsd-kind-icon">unregister<wbr>All</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface tsd-is-not-exported"><a href="_registry_.handleregistry.html#register" class="tsd-kind-icon">register</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface tsd-is-not-exported"><a href="_registry_.handleregistry.html#registerall" class="tsd-kind-icon">register<wbr>All</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface tsd-is-not-exported"><a href="_registry_.handleregistry.html#unregister" class="tsd-kind-icon">unregister</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface tsd-is-not-exported"><a href="_registry_.handleregistry.html#unregisterall" class="tsd-kind-icon">unregister<wbr>All</a></li>
 							</ul>
 						</section>
 					</div>
@@ -113,13 +113,13 @@
 					<a name="register" class="tsd-anchor"></a>
 					<h3>register</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface tsd-is-not-exported">
-						<li class="tsd-signature tsd-kind-icon">register<span class="tsd-signature-symbol">(</span>address<span class="tsd-signature-symbol">: </span><a href="../modules/_addrmap_.html#wildcardmultistringaddress" class="tsd-signature-type">WildcardMultistringAddress</a>, func<span class="tsd-signature-symbol">: </span><a href="_core_.rpcfunction.html" class="tsd-signature-type">RpcFunction</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
+						<li class="tsd-signature tsd-kind-icon">register<span class="tsd-signature-symbol">(</span>address<span class="tsd-signature-symbol">: </span><a href="../modules/_addrmap_.html#wildcardmultistringaddress" class="tsd-signature-type">WildcardMultistringAddress</a>, func<span class="tsd-signature-symbol">: </span><a href="_registry_.rpcfunction.html" class="tsd-signature-type">RpcFunction</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KB1RD/rpcchannel/blob/28c753e/src/core.ts#L264">src/core.ts:264</a></li>
+									<li>Defined in <a href="https://github.com/KB1RD/rpcchannel/blob/4d858b7/src/registry.ts#L155">src/registry.ts:155</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -136,7 +136,7 @@
 									</div>
 								</li>
 								<li>
-									<h5>func: <a href="_core_.rpcfunction.html" class="tsd-signature-type">RpcFunction</a></h5>
+									<h5>func: <a href="_registry_.rpcfunction.html" class="tsd-signature-type">RpcFunction</a></h5>
 									<div class="tsd-comment tsd-typography">
 										<p>Function to call when triggered</p>
 									</div>
@@ -150,13 +150,13 @@
 					<a name="registerall" class="tsd-anchor"></a>
 					<h3>register<wbr>All</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface tsd-is-not-exported">
-						<li class="tsd-signature tsd-kind-icon">register<wbr>All<span class="tsd-signature-symbol">(</span>obj<span class="tsd-signature-symbol">: </span><a href="../modules/_core_.html#baseregisteredobject" class="tsd-signature-type">BaseRegisteredObject</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
+						<li class="tsd-signature tsd-kind-icon">register<wbr>All<span class="tsd-signature-symbol">(</span>obj<span class="tsd-signature-symbol">: </span><a href="../modules/_registry_.html#baseregisteredobject" class="tsd-signature-type">BaseRegisteredObject</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KB1RD/rpcchannel/blob/28c753e/src/core.ts#L274">src/core.ts:274</a></li>
+									<li>Defined in <a href="https://github.com/KB1RD/rpcchannel/blob/4d858b7/src/registry.ts#L165">src/registry.ts:165</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -168,7 +168,7 @@
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
-									<h5>obj: <a href="../modules/_core_.html#baseregisteredobject" class="tsd-signature-type">BaseRegisteredObject</a></h5>
+									<h5>obj: <a href="../modules/_registry_.html#baseregisteredobject" class="tsd-signature-type">BaseRegisteredObject</a></h5>
 								</li>
 							</ul>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
@@ -185,7 +185,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KB1RD/rpcchannel/blob/28c753e/src/core.ts#L269">src/core.ts:269</a></li>
+									<li>Defined in <a href="https://github.com/KB1RD/rpcchannel/blob/4d858b7/src/registry.ts#L160">src/registry.ts:160</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -210,13 +210,13 @@
 					<a name="unregisterall" class="tsd-anchor"></a>
 					<h3>unregister<wbr>All</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface tsd-is-not-exported">
-						<li class="tsd-signature tsd-kind-icon">unregister<wbr>All<span class="tsd-signature-symbol">(</span>obj<span class="tsd-signature-symbol">: </span><a href="../modules/_core_.html#baseregisteredobject" class="tsd-signature-type">BaseRegisteredObject</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
+						<li class="tsd-signature tsd-kind-icon">unregister<wbr>All<span class="tsd-signature-symbol">(</span>obj<span class="tsd-signature-symbol">: </span><a href="../modules/_registry_.html#baseregisteredobject" class="tsd-signature-type">BaseRegisteredObject</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KB1RD/rpcchannel/blob/28c753e/src/core.ts#L280">src/core.ts:280</a></li>
+									<li>Defined in <a href="https://github.com/KB1RD/rpcchannel/blob/4d858b7/src/registry.ts#L171">src/registry.ts:171</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -229,7 +229,7 @@
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
-									<h5>obj: <a href="../modules/_core_.html#baseregisteredobject" class="tsd-signature-type">BaseRegisteredObject</a></h5>
+									<h5>obj: <a href="../modules/_registry_.html#baseregisteredobject" class="tsd-signature-type">BaseRegisteredObject</a></h5>
 								</li>
 							</ul>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
@@ -245,16 +245,22 @@
 						<a href="../globals.html"><em>Globals</em></a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="../modules/_addrmap_.html">&quot;addrmap&quot;</a>
+						<a href="../modules/_accesscontrol_.html">&quot;accesscontrol&quot;</a>
 					</li>
-					<li class="current tsd-kind-module">
-						<a href="../modules/_core_.html">&quot;core&quot;</a>
+					<li class=" tsd-kind-module">
+						<a href="../modules/_addrmap_.html">&quot;addrmap&quot;</a>
 					</li>
 					<li class=" tsd-kind-module">
 						<a href="../modules/_index_.html">&quot;index&quot;</a>
 					</li>
+					<li class="current tsd-kind-module">
+						<a href="../modules/_registry_.html">&quot;registry&quot;</a>
+					</li>
 					<li class=" tsd-kind-module">
 						<a href="../modules/_schema_.html">&quot;schema&quot;</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="../modules/_serializer_.html">&quot;serializer&quot;</a>
 					</li>
 					<li class=" tsd-kind-module">
 						<a href="../modules/_utils_.html">&quot;utils&quot;</a>
@@ -263,110 +269,74 @@
 			</nav>
 			<nav class="tsd-navigation secondary menu-sticky">
 				<ul class="before-current">
-					<li class=" tsd-kind-class tsd-parent-kind-module">
-						<a href="../classes/_core_.accessdeniederror.html" class="tsd-kind-icon">Access<wbr>Denied<wbr>Error</a>
+					<li class=" tsd-kind-enum tsd-parent-kind-module">
+						<a href="../enums/_registry_.rpcstate.html" class="tsd-kind-icon">Rpc<wbr>State</a>
 					</li>
 					<li class=" tsd-kind-class tsd-parent-kind-module">
-						<a href="../classes/_core_.forwardederror.html" class="tsd-kind-icon">Forwarded<wbr>Error</a>
+						<a href="../classes/_registry_.accessdeniederror.html" class="tsd-kind-icon">Access<wbr>Denied<wbr>Error</a>
 					</li>
 					<li class=" tsd-kind-class tsd-parent-kind-module">
-						<a href="../classes/_core_.invalidchannelerror.html" class="tsd-kind-icon">Invalid<wbr>Channel<wbr>Error</a>
+						<a href="../classes/_registry_.forwardederror.html" class="tsd-kind-icon">Forwarded<wbr>Error</a>
 					</li>
 					<li class=" tsd-kind-class tsd-parent-kind-module">
-						<a href="../classes/_core_.rpcchannel.html" class="tsd-kind-icon">Rpc<wbr>Channel</a>
+						<a href="../classes/_registry_.invalidchannelerror.html" class="tsd-kind-icon">Invalid<wbr>Channel<wbr>Error</a>
+					</li>
+					<li class=" tsd-kind-class tsd-parent-kind-module tsd-has-type-parameter">
+						<a href="../classes/_registry_.rpcchannel.html" class="tsd-kind-icon">Rpc<wbr>Channel</a>
 					</li>
 					<li class=" tsd-kind-class tsd-parent-kind-module">
-						<a href="../classes/_core_.rpchandlerregistry.html" class="tsd-kind-icon">Rpc<wbr>Handler<wbr>Registry</a>
+						<a href="../classes/_registry_.rpchandlerregistry.html" class="tsd-kind-icon">Rpc<wbr>Handler<wbr>Registry</a>
 					</li>
 				</ul>
 				<ul class="current">
 					<li class="current tsd-kind-interface tsd-parent-kind-module tsd-is-not-exported">
-						<a href="_core_.handleregistry.html" class="tsd-kind-icon">Handle<wbr>Registry</a>
+						<a href="_registry_.handleregistry.html" class="tsd-kind-icon">Handle<wbr>Registry</a>
 						<ul>
 							<li class=" tsd-kind-method tsd-parent-kind-interface tsd-is-not-exported">
-								<a href="_core_.handleregistry.html#register" class="tsd-kind-icon">register</a>
+								<a href="_registry_.handleregistry.html#register" class="tsd-kind-icon">register</a>
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-interface tsd-is-not-exported">
-								<a href="_core_.handleregistry.html#registerall" class="tsd-kind-icon">register<wbr>All</a>
+								<a href="_registry_.handleregistry.html#registerall" class="tsd-kind-icon">register<wbr>All</a>
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-interface tsd-is-not-exported">
-								<a href="_core_.handleregistry.html#unregister" class="tsd-kind-icon">unregister</a>
+								<a href="_registry_.handleregistry.html#unregister" class="tsd-kind-icon">unregister</a>
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-interface tsd-is-not-exported">
-								<a href="_core_.handleregistry.html#unregisterall" class="tsd-kind-icon">unregister<wbr>All</a>
+								<a href="_registry_.handleregistry.html#unregisterall" class="tsd-kind-icon">unregister<wbr>All</a>
 							</li>
 						</ul>
 					</li>
 				</ul>
 				<ul class="after-current">
 					<li class=" tsd-kind-interface tsd-parent-kind-module">
-						<a href="_core_.rpcaccessor.html" class="tsd-kind-icon">Rpc<wbr>Accessor</a>
-					</li>
-					<li class=" tsd-kind-interface tsd-parent-kind-module">
-						<a href="_core_.rpcfunction.html" class="tsd-kind-icon">Rpc<wbr>Function</a>
+						<a href="_registry_.rpcaccessor.html" class="tsd-kind-icon">Rpc<wbr>Accessor</a>
 					</li>
 					<li class=" tsd-kind-interface tsd-parent-kind-module tsd-is-not-exported">
-						<a href="_core_.withvalidaddresskey.html" class="tsd-kind-icon">With<wbr>Valid<wbr>Address<wbr>Key</a>
+						<a href="_registry_.rpcchannelopts.html" class="tsd-kind-icon">Rpc<wbr>Channel<wbr>Opts</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-parent-kind-module">
+						<a href="_registry_.rpcfunction.html" class="tsd-kind-icon">Rpc<wbr>Function</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-parent-kind-module tsd-is-not-exported">
+						<a href="_registry_.withvalidaddresskey.html" class="tsd-kind-icon">With<wbr>Valid<wbr>Address<wbr>Key</a>
 					</li>
 					<li class=" tsd-kind-type-alias tsd-parent-kind-module">
-						<a href="../modules/_core_.html#accesspolicy" class="tsd-kind-icon">Access<wbr>Policy</a>
-					</li>
-					<li class=" tsd-kind-type-alias tsd-parent-kind-module">
-						<a href="../modules/_core_.html#baseregisteredobject" class="tsd-kind-icon">Base<wbr>Registered<wbr>Object</a>
+						<a href="../modules/_registry_.html#baseregisteredobject" class="tsd-kind-icon">Base<wbr>Registered<wbr>Object</a>
 					</li>
 					<li class=" tsd-kind-type-alias tsd-parent-kind-module tsd-is-not-exported">
-						<a href="../modules/_core_.html#primitive" class="tsd-kind-icon">Primitive</a>
-					</li>
-					<li class=" tsd-kind-type-alias tsd-parent-kind-module tsd-is-not-exported">
-						<a href="../modules/_core_.html#rpcresult" class="tsd-kind-icon">Rpc<wbr>Result</a>
-					</li>
-					<li class=" tsd-kind-type-alias tsd-parent-kind-module tsd-is-not-exported">
-						<a href="../modules/_core_.html#serializablearray" class="tsd-kind-icon">Serializable<wbr>Array</a>
-					</li>
-					<li class=" tsd-kind-type-alias tsd-parent-kind-module">
-						<a href="../modules/_core_.html#serializabledata" class="tsd-kind-icon">Serializable<wbr>Data</a>
-					</li>
-					<li class=" tsd-kind-type-alias tsd-parent-kind-module tsd-is-not-exported">
-						<a href="../modules/_core_.html#serializableobject" class="tsd-kind-icon">Serializable<wbr>Object</a>
-					</li>
-					<li class=" tsd-kind-type-alias tsd-parent-kind-module tsd-is-not-exported">
-						<a href="../modules/_core_.html#serializationfuncobject" class="tsd-kind-icon">Serialization<wbr>Func<wbr>Object</a>
-					</li>
-					<li class=" tsd-kind-type-alias tsd-parent-kind-module tsd-is-not-exported">
-						<a href="../modules/_core_.html#serializationfunction" class="tsd-kind-icon">Serialization<wbr>Function</a>
-					</li>
-					<li class=" tsd-kind-type-alias tsd-parent-kind-module tsd-is-not-exported">
-						<a href="../modules/_core_.html#serializedarray" class="tsd-kind-icon">Serialized<wbr>Array</a>
-					</li>
-					<li class=" tsd-kind-type-alias tsd-parent-kind-module">
-						<a href="../modules/_core_.html#serializeddata" class="tsd-kind-icon">Serialized<wbr>Data</a>
-					</li>
-					<li class=" tsd-kind-type-alias tsd-parent-kind-module tsd-is-not-exported">
-						<a href="../modules/_core_.html#serializedobject" class="tsd-kind-icon">Serialized<wbr>Object</a>
+						<a href="../modules/_registry_.html#rpcresult" class="tsd-kind-icon">Rpc<wbr>Result</a>
 					</li>
 					<li class=" tsd-kind-variable tsd-parent-kind-module">
-						<a href="../modules/_core_.html#rpcfunctionaddress" class="tsd-kind-icon">Rpc<wbr>Function<wbr>Address</a>
+						<a href="../modules/_registry_.html#rpcfunctionaddress" class="tsd-kind-icon">Rpc<wbr>Function<wbr>Address</a>
 					</li>
 					<li class=" tsd-kind-variable tsd-parent-kind-module">
-						<a href="../modules/_core_.html#rpcremappedfunction" class="tsd-kind-icon">Rpc<wbr>Remapped<wbr>Function</a>
-					</li>
-					<li class=" tsd-kind-variable tsd-parent-kind-module">
-						<a href="../modules/_core_.html#torpcserialized" class="tsd-kind-icon">to<wbr>Rpc<wbr>Serialized</a>
-					</li>
-					<li class=" tsd-kind-variable tsd-parent-kind-module tsd-is-not-exported">
-						<a href="../modules/_core_.html#transferrables" class="tsd-kind-icon">transferrables</a>
+						<a href="../modules/_registry_.html#rpcremappedfunction" class="tsd-kind-icon">Rpc<wbr>Remapped<wbr>Function</a>
 					</li>
 					<li class=" tsd-kind-function tsd-parent-kind-module">
-						<a href="../modules/_core_.html#remaparguments" class="tsd-kind-icon">Remap<wbr>Arguments</a>
+						<a href="../modules/_registry_.html#remaparguments" class="tsd-kind-icon">Remap<wbr>Arguments</a>
 					</li>
 					<li class=" tsd-kind-function tsd-parent-kind-module">
-						<a href="../modules/_core_.html#rpcaddress" class="tsd-kind-icon">Rpc<wbr>Address</a>
-					</li>
-					<li class=" tsd-kind-function tsd-parent-kind-module">
-						<a href="../modules/_core_.html#rpcserialize" class="tsd-kind-icon">rpc<wbr>Serialize</a>
-					</li>
-					<li class=" tsd-kind-object-literal tsd-parent-kind-module">
-						<a href="../modules/_core_.html#accesspolicy-1" class="tsd-kind-icon">Access<wbr>Policy</a>
+						<a href="../modules/_registry_.html#rpcaddress" class="tsd-kind-icon">Rpc<wbr>Address</a>
 					</li>
 				</ul>
 			</nav>
@@ -393,6 +363,9 @@
 			<ul class="tsd-legend">
 				<li class="tsd-kind-class"><span class="tsd-kind-icon">Class</span></li>
 				<li class="tsd-kind-class tsd-has-type-parameter"><span class="tsd-kind-icon">Class with type parameter</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-enum"><span class="tsd-kind-icon">Enumeration</span></li>
 			</ul>
 		</div>
 	</div>
