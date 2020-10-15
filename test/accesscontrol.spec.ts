@@ -87,6 +87,7 @@ describe('[accesscontrol.ts] SetCanCallFunc', () => {
 
 const default_opts = {
   args: [{}, Symbol(), 'hi'],
+  wc: [],
   channel: new RpcChannel(() => undefined),
   func: () => undefined
 }

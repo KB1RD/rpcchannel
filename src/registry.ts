@@ -17,7 +17,8 @@ import {
   OptAccessPolicy,
   CanCallFunction,
   RequiresPermissions,
-  PermissionedAccessCanFunction
+  PermissionedAccessCanFunction,
+  CanCallOpts
 } from './accesscontrol'
 import { rpcSerialize, SerializableData, SerializedData } from './serializer'
 import { isDefined } from './utils'
@@ -271,11 +272,6 @@ interface RpcChannelOpts {
    */
   await_first_msg?: boolean
 }
-interface CompleteRpcChannelOpts {
-  timeout: number
-  keep_alive_interval: number
-  await_first_msg: boolean
-}
 
 export enum RpcState {
   INACTIVE,
@@ -313,7 +309,7 @@ export class RpcChannel
     this.resetKeepAlive()
   }
 
-  get opts(): CompleteRpcChannelOpts {
+  get opts(): Readonly<NonNullable<RpcChannelOpts>> {
     const timeout = this._opts.timeout || 0
     return {
       timeout,
@@ -442,10 +438,7 @@ export class RpcChannel
     this.reg.unregisterAll(obj)
   }
 
-  can(
-    addr: MultistringAddress,
-    opts: { args: SerializableData[]; channel: RpcChannel; func?: RpcFunction }
-  ): OptAccessPolicy {
+  can(addr: MultistringAddress, opts: CanCallOpts): OptAccessPolicy {
     let val = this.access_controller && this.access_controller.can(addr, opts)
     if (isDefined(val)) {
       return val
@@ -754,6 +747,7 @@ export class RpcChannel
 
     const security_policy = this.can(val.to, {
       args: val.args,
+      wc,
       channel: this,
       func
     })

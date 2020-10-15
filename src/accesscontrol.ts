@@ -11,19 +11,23 @@ export const AccessPolicy = {
 export type OptAccessPolicy = AccessPolicy | undefined | null
 export const OptAccessPolicy = Object.assign({ NONE: null }, AccessPolicy)
 
+export interface CanCallOpts {
+  args: SerializableData[]
+  wc: string[]
+  channel: RpcChannel
+  func?: RpcFunction
+}
+
 export type AccessCanFunction = (
   addr: MultistringAddress,
-  opts: { args: SerializableData[]; channel: RpcChannel; func?: RpcFunction }
+  opts: CanCallOpts
 ) => OptAccessPolicy
 
 /**
  * Controls access to RPC endpoints based on address AND arguments.
  */
 export interface AccessController {
-  can(
-    addr: MultistringAddress,
-    opts: { args: SerializableData[]; channel: RpcChannel; func?: RpcFunction }
-  ): OptAccessPolicy
+  can(addr: MultistringAddress, opts: CanCallOpts): OptAccessPolicy
 }
 /**
  * Always allows access.
@@ -53,10 +57,7 @@ export class FunctionAccessController implements AccessController {
 export class ChainedAccessController implements AccessController {
   public readonly access_chain: AccessController[] = []
   constructor(public default_ap: OptAccessPolicy = OptAccessPolicy.NONE) {}
-  can(
-    addr: MultistringAddress,
-    opts: { args: SerializableData[]; channel: RpcChannel; func?: RpcFunction }
-  ): OptAccessPolicy {
+  can(addr: MultistringAddress, opts: CanCallOpts): OptAccessPolicy {
     let val: OptAccessPolicy
     this.access_chain.some((ctrl) => isDefined((val = ctrl.can(addr, opts))))
     return isDefined(val) ? val : this.default_ap
@@ -76,24 +77,20 @@ export class LegacyAccessController implements AccessController {
  */
 export class FunctionLookupAccessController implements AccessController {
   public readonly map = new AddressMap<AccessCanFunction>()
-  can(
-    to: MultistringAddress,
-    opts: { args: SerializableData[]; channel: RpcChannel; func?: RpcFunction }
-  ): OptAccessPolicy {
+  can(to: MultistringAddress, opts: CanCallOpts): OptAccessPolicy {
     const func = this.map.get(to)
     return (func && func(to, opts)) || OptAccessPolicy.NONE
   }
 }
 export const CanCallFunction = Symbol('CanCall')
 export const RequiresPermissions = Symbol('RequiresPermissions')
+export interface PermissionedCanCallOpts extends CanCallOpts {
+  require: (perm: string) => void
+  perms: Set<string>
+}
 export type PermissionedAccessCanFunction = (
   addr: MultistringAddress,
-  opts: {
-    args: SerializableData[]
-    channel: RpcChannel
-    func?: RpcFunction
-    require: (perm: string) => void
-  }
+  opts: PermissionedCanCallOpts
 ) => OptAccessPolicy
 /**
  * First, this `AccessController` will check the `RequiresPermissions` property
@@ -103,10 +100,7 @@ export type PermissionedAccessCanFunction = (
  */
 export class AutoFunctionAccessController implements AccessController {
   constructor(public perms = new Set<string>()) {}
-  can(
-    to: MultistringAddress,
-    opts: { args: SerializableData[]; channel: RpcChannel; func?: RpcFunction }
-  ): OptAccessPolicy {
+  can(to: MultistringAddress, opts: CanCallOpts): OptAccessPolicy {
     const obj = opts.func && opts.func[RequiresPermissions]
     if (typeof obj === 'object' && typeof obj[Symbol.iterator] === 'function') {
       for (const requirement of obj) {
@@ -120,7 +114,10 @@ export class AutoFunctionAccessController implements AccessController {
       const requirements = new Set<string>()
       const result = func(
         to,
-        Object.assign({ require: (s: string) => requirements.add(s) }, opts)
+        Object.assign(
+          { require: (s: string) => requirements.add(s), perms: this.perms },
+          opts
+        )
       )
       for (const requirement of requirements) {
         if (!this.perms.has(requirement)) {
