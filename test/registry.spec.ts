@@ -1,20 +1,14 @@
 import { expect } from 'chai'
 import {
   toRpcSerialized,
-  rpcSerialize,
   InvalidChannelError,
-  AccessDeniedError,
   ForwardedError,
-  AccessPolicy,
   RpcChannel,
   RpcMessage,
   RpcRemappedFunction,
   RpcAddress,
   RemapArguments,
   RpcFunctionAddress,
-  SerializableData,
-  SerializedData,
-  BaseRegisteredObject,
   RpcFunction,
   RpcHandlerRegistry,
   MultistringAddress,
@@ -460,7 +454,7 @@ describe('[registry.ts] RpcChannel', () => {
   describe('call', () => {
     beforeEach(() => c.start())
     it('defaults to empty args', () => {
-      c.call(['net', 'kb1rd', 'hello'])
+      c.call(['net', 'kb1rd', 'hello']).catch(() => undefined)
       expect(sent_msgs.length).to.be.equal(1)
       expect(sent_msgs[0][0]).to.be.deep.equal({
         to: ['net', 'kb1rd', 'hello'],
@@ -474,7 +468,7 @@ describe('[registry.ts] RpcChannel', () => {
       c.call(
         ['net', 'kb1rd', 'hello'],
         [123, 'abc', { [toRpcSerialized]: () => 'hi' }]
-      )
+      ).catch(() => undefined)
       expect(sent_msgs.length).to.be.equal(1)
       expect(sent_msgs[0][0]).to.be.deep.equal({
         to: ['net', 'kb1rd', 'hello'],
@@ -488,11 +482,11 @@ describe('[registry.ts] RpcChannel', () => {
       c.call(
         ['net', 'kb1rd', 'hello'],
         [123, 'abc', { [toRpcSerialized]: () => 'hi' }]
-      )
+      ).catch(() => undefined)
       c.call(
         ['net', 'kb1rd', 'hello'],
         [123, 'abc', { [toRpcSerialized]: () => 'hi' }]
-      )
+      ).catch(() => undefined)
       expect(sent_msgs.length).to.be.equal(2)
       expect(sent_msgs[0][0]).to.be.deep.equal({
         to: ['net', 'kb1rd', 'hello'],
@@ -589,6 +583,18 @@ describe('[registry.ts] RpcChannel', () => {
       }
       expect(error).to.be.an.instanceOf(ForwardedError)
       expect(error.name).to.be.equal('ERROR!')
+    })
+    it('rejects promise if channel closed', async () => {
+      const promise = c.call(['net', 'kb1rd', 'hello'], [])
+
+      c.close()
+      let error: any
+      try {
+        await promise
+      } catch(e) {
+        error = e
+      }
+      expect(() => { throw error }).to.throw('Channel closed')
     })
   })
   describe('generate', () => {
@@ -763,11 +769,20 @@ describe('[registry.ts] RpcChannel', () => {
       expect(error).to.be.an.instanceOf(ForwardedError)
       expect(error.name).to.be.equal('ERROR!')
     })
+    it('finishes if channel closed', async () => {
+      const gen = c.generate(['net', 'kb1rd', 'hello'], [])
+
+      c.close()
+      const data = await gen.next()
+      expect(data.done).to.be.equal(true)
+    })
   })
   describe('call_obj', () => {
     beforeEach(() => c.start())
     it('passes args to `send`', () => {
-      c.call_obj.net.kb1rd.hello(123, 'abc', { [toRpcSerialized]: () => 'hi' })
+      c.call_obj.net.kb1rd
+        .hello(123, 'abc', { [toRpcSerialized]: () => 'hi' })
+        .catch(() => undefined)
       expect(sent_msgs.length).to.be.equal(1)
       expect(sent_msgs[0][0]).to.be.deep.equal({
         to: ['net', 'kb1rd', 'hello'],
@@ -824,6 +839,16 @@ describe('[registry.ts] RpcChannel', () => {
       if (error) {
         throw error
       }
+    })
+    it('does nothing if channel stopped', () => {
+      c.stop()
+      let called = false
+      c.on('rawmessage', () => (called = true))
+      c.receive({
+        to: ['net', 'kb1rd', 'test'],
+        args: ['hello', 123]
+      })
+      expect(called).to.be.false
     })
     describe('promise return', () => {
       it('`send`s return value', () => {

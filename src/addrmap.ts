@@ -73,6 +73,12 @@ class AddressMap<T> {
     return isUndef(value) ? this.table[DefaultEntryKey] : value
   }
 
+  clear(): void {
+    for (const k of Object.keys(this.table)) {
+      delete this.table[k]
+    }
+  }
+
   toString(): string {
     const entries: string[] = []
     const addr_str: string[] = []

@@ -229,6 +229,10 @@ export class RpcHandlerRegistry
     } while ((obj = Object.getPrototypeOf(obj)))
   }
 
+  clear(): void {
+    this.map.clear()
+  }
+
   nextSeqAddr(): MultistringAddress {
     return ['_', 'ret', `id${this.return_seq_id++}`]
   }
@@ -414,6 +418,7 @@ export class RpcChannel
       }
     }
     this._stateChange(RpcState.CLOSED)
+    this._i_reg.clear()
     if (this.active_timeout) {
       clearTimeout(this.active_timeout)
       delete this.active_timeout
@@ -480,7 +485,9 @@ export class RpcChannel
    * Calls a handle and awaits the return value.
    * @param to Handle to call
    * @param args Arguments to pass through
-   * @returns A promise that will return when the call is completed.
+   * @returns A promise that will return when the call is completed. This will
+   * throw an error with the message `Channel closed` if the channel is closed
+   * before a response is received.
    */
   call(
     to: MultistringAddress,
@@ -488,6 +495,14 @@ export class RpcChannel
   ): Promise<SerializedData> {
     const return_addr = this._i_reg.nextSeqAddr()
     return new Promise((resolve, reject) => {
+      const onDone = () => {
+        this.unregister(return_addr)
+        this.off('close', onChannelClose)
+      }
+      const onChannelClose = () => {
+        onDone()
+        reject(new Error('Channel closed'))
+      }
       this._i_reg.register(return_addr, (channel, wc, data, error) => {
         if (channel !== this) {
           reject(
@@ -504,8 +519,9 @@ export class RpcChannel
         } else {
           resolve(data as SerializedData)
         }
-        this.unregister(return_addr)
+        onDone()
       })
+      this.once('close', onChannelClose)
       this.send(to, args, return_addr)
     })
   }
@@ -531,7 +547,14 @@ export class RpcChannel
     const buffer: [SerializedData, SerializedData | Error, boolean][] = []
     let onNewData: (() => void) | undefined
 
-    const onDone = () => this._i_reg.unregister(return_addr)
+    const onDone = () => {
+      this._i_reg.unregister(return_addr)
+      this.off('close', onChannelClose)
+    }
+    const onChannelClose = () => {
+      onDone()
+      buffer.push([undefined, undefined, true])
+    }
     this._i_reg.register(return_addr, (channel, wc, data, error, done) => {
       if (channel !== this) {
         onDone()
@@ -560,6 +583,8 @@ export class RpcChannel
         onNewData()
       }
     })
+
+    this.once('close', onChannelClose)
 
     const getNext = async (): Promise<
       [SerializedData, SerializedData | Error, boolean]
@@ -635,6 +660,9 @@ export class RpcChannel
    * @param val Incoming message
    */
   receive(val: RpcMessage): void {
+    if (this.state === RpcState.CLOSED) {
+      return
+    }
     this.emit('rawmessage', val)
 
     type ItType = AsyncGenerator<SerializableData, void, void>
